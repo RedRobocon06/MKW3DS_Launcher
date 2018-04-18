@@ -1,5 +1,5 @@
 # CTGP-7 Launcher
-Launcher app used with CTGP-7 to launch the mod. This repository also has a modification of the plugin loader used with Luma3DS plugin loader fork but specific for MK7 title IDs. If you came here only for the plugin loader I recommend checking the repository for that version instead.
+Launcher app used with CTGP-7 to launch the mod. This repository also has a modification of the plugin loader used in the Luma3DS with plugin loading support fork but specific for MK7 title IDs. If you came here only for the plugin loader I recommend checking that repository instead.
 
 # Building
 Building CTGP-7 Launcher is handled through buildtools. You have to have the following installed:
@@ -12,5 +12,5 @@ Once you have installed all the dependencies simply run `make` in the BootNTR di
 
 
 # Credits
-- @Nanquitas: BootNTRSelector, from which this app is forked.
-- @44670: Initial BootNTR and NTR CFW developer.
+- [@Nanquitas](https://github.com/Nanquitas) : BootNTRSelector, from which this app is forked.
+- [@44670](https://github.com/44670) : Initial BootNTR and NTR CFW developer.
