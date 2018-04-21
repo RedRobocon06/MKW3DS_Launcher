@@ -56,6 +56,7 @@ typedef uint8_t   u8;
 #define FINAL_CIA_PATH "/CTGP-7/cia/CTGP-7.cia"
 #define TEMPORAL_3DSX_PATH "/CTGP-7/cia/CTGP-7.3dsx"
 #define FINAL_3DSX_PATH "/3ds/CTGP-7/CTGP-7.3dsx"
+#define LAUNCH_OPT_SAVE "/CTGP-7/config/launchopt.bin"
 #define CTGP7_TID (0x0004000003070C00ULL)
 
 static const char * const s_error[] =
@@ -205,4 +206,9 @@ void setControlsMode(int mode);
 void UpdatesMenu();
 void clearUpdateSprites();
 void    InitUpdatesUI(void);
+
+/*
+** launcher.c
+*/
+void launchMod();
 #endif

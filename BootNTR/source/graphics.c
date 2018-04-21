@@ -7,6 +7,7 @@ sprite_t         *topSprite = NULL;
 
 sprite_t         *topInfoSprite = NULL;
 sprite_t		 *topInfoSpriteUpd = NULL;
+sprite_t         *launchControlsSprite = NULL;
 drawableScreen_t *botScreen = NULL;
 drawableScreen_t *topScreen = NULL;
 appInfoObject_t         *appTop = NULL;
@@ -26,8 +27,11 @@ void    initUI(void)
     newSpriteFromPNG(&topInfoSprite, "romfs:/sprites/topInfoBackground.png");
 	newSpriteFromPNG(&topInfoSpriteUpd, "romfs:/sprites/topInfoBackgroundUpd.png");
 
+	newSpriteFromPNG(&launchControlsSprite, "romfs:/sprites/textSprites/launchControlsSprite.png");
+
     setSpritePos(topSprite, 0, 0);
     setSpritePos(bottomSprite, 0, 0);
+	setSpritePos(launchControlsSprite, 0.0f, 220.0f);
     
     bg = newBackgroundObject(bottomSprite, NULL, NULL);
     botScreen = newDrawableScreen(bg);
@@ -48,6 +52,7 @@ void    exitUI(void)
     deleteSprite(bottomSprite);
     deleteSprite(topSprite);
     deleteSprite(topInfoSprite);
+	deleteSprite(launchControlsSprite);
 }
 
 static inline void drawUITop(void)

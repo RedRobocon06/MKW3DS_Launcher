@@ -6,23 +6,27 @@
 #include "clock.h"
 #include "drawableObject.h"
 
-extern drawableScreen_t* botScreen;
+extern drawableScreen_t	*botScreen;
 extern drawableScreen_t *topScreen;
 extern bool				forceUpdate;
-extern progressbar_t *updateProgBar;
-extern appInfoObject_t         *appTop;
+extern progressbar_t	*updateProgBar;
+extern appInfoObject_t  *appTop;
 extern sprite_t         *topInfoSprite; 
-extern sprite_t		 *topInfoSpriteUpd;
+extern sprite_t			*topInfoSpriteUpd;
 
 static button_t         *V32Button = NULL;
 static button_t         *V33Button = NULL;
 static sprite_t         *tinyButtonBGSprite = NULL;
 static sprite_t         *selTinyButtonBGSprite = NULL;
-static sprite_t         *pressExitSprite = NULL;
+sprite_t				*pressExitSprite = NULL;
 static bool             userTouch = false;
-static bool				launchPlgLoader = false;
+static bool				optionSelected = false;
+static u32				optionTodo = 0xFF;
 
 extern bool restartneeded;
+
+extern u64 launchAppID;
+extern FS_MediaType launchAppMedtype;
 
 
 static u32 getNextRbwColor(u32 counter) {
@@ -54,30 +58,11 @@ void greyExit() {
 
 void    selectVersion(u32 mode)
 {
+	if (userTouch) return;
 	V32Button->disable(V32Button);
 	V33Button->disable(V33Button);
-    switch(mode)
-    {
-        case 1:
-			launchPlgLoader = true;
-			userTouch = true;
-			greyBottomScreen(true);
-			V33Button->isGreyedOut = true;
-            break;
-        case 2:
-			greyBottomScreen(true);
-			V32Button->isGreyedOut = true;
-			pressExitSprite->isHidden = true;
-			UpdatesMenu();
-			pressExitSprite->isHidden = false;
-			greyBottomScreen(false);
-			V32Button->isGreyedOut = false;
-			if (restartneeded) userTouch = true;
-			//TODO
-            break;
-        default:
-            break;
-    }
+	optionSelected = true;
+	optionTodo = mode;
 	V32Button->enable(V32Button);
 	V33Button->enable(V33Button);
 }
@@ -166,57 +151,42 @@ int     mainMenu(void)
 		updateUI();
 		keys = hidKeysDown() | hidKeysHeld();
 		exitkey = hidKeysDown();
-    }
-	if (launchPlgLoader) {
-		u32 prog = 0;
-		u32 progtot;
-		s64 lumaver;
-		FILE* showFlag = NULL;
-		appTop->sprite = topInfoSpriteUpd;
-		if (osGetKernelVersion() < SYSTEM_VERSION(2, 54, 0) || R_FAILED(svcGetSystemInfo(&lumaver, 0x10000, 0)) || GET_VERSION_MAJOR((u32)lumaver) < 9) {
-			bool errorloop = true;
-			u32 keys = 0;
-			clearTop(false);
-			newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Failed to launch CTGP-7");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\n\nSystem firmware or Luma CFW");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "versions are outdated.");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nFirmware 11.4 and Luma v9.0");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "or avobe are needed to play.");
-			while (errorloop) {
-				updateUI();
-				keys = hidKeysDown();
-				if (keys & KEY_B) {
-					errorloop = false;
+		if (optionSelected) {
+			switch (optionTodo)
+			{
+			case 1:
+				greyBottomScreen(true);
+				V33Button->isGreyedOut = true;
+				pressExitSprite->isHidden = true;
+				launchMod();
+				if (!(u32)(launchAppID)) {
+					V33Button->isGreyedOut = false;
+					greyBottomScreen(false);
+					V33Button->isGreyedOut = false;
+					pressExitSprite->isHidden = false;
 				}
+				else {
+					userTouch = true;
+				}
+				break;
+			case 2:
+				greyBottomScreen(true);
+				V32Button->isGreyedOut = true;
+				pressExitSprite->isHidden = true;
+				UpdatesMenu();
+				pressExitSprite->isHidden = false;
+				greyBottomScreen(false);
+				V32Button->isGreyedOut = false;
+				if (restartneeded) userTouch = true;
+				break;
+			default:
+				break;
 			}
+			optionSelected = false;
+			optionTodo = 0xFF;
+			hidScanInput();
 		}
-		else {
-			launchPluginLoader();
-			updateProgBar->rectangle->amount = 0;
-			updateProgBar->isHidden = false;
-			pressExitSprite->isHidden = true;
-			clearTop(false);
-			newAppTop(DEFAULT_COLOR, MEDIUM | BOLD | CENTER, "Launching CTGP-7");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\n\n\nOpen Mario Kart 7");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "from the home menu.");
-			showFlag = fopen("/CTGP-7/config/waitBoot.flag", "rb");
-			if (!showFlag) {
-				showFlag = fopen("/CTGP-7/config/waitBoot.flag", "w");
-				fwrite("dummy", 1, 5, showFlag);
-				progtot = 250;
-			}
-			else {
-				progtot = 17;
-			}
-			fclose(showFlag);
-			while (prog <= progtot) {
-				updateUI();
-				svcSleepThread(10000000);
-				updateProgBar->rectangle->amount = ((float)prog) / ((float)progtot);
-				prog++;
-			}
-		}
-	}
+    }
 	greyExit();
 	updateUI();
 	svcSleepThread(500000000);

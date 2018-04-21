@@ -26,7 +26,7 @@ LIBRARIES := citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
 
 VERSION_MAJOR := 1
 VERSION_MINOR := 0
-VERSION_MICRO := 2
+VERSION_MICRO := 3
 
 
 BUILD_FLAGS := -march=armv6k -mtune=mpcore -mfloat-abi=hard

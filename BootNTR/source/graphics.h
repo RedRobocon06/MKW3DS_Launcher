@@ -27,7 +27,7 @@ extern appInfoObject_t  *appBottom;
 #define removeAppTop() removeAppInfoEntry(appTop)
 #define clearTop(update)    clearAppInfo(appTop, update)
 
-#define TRACE() {newAppTop(DEFAULT_COLOR, SMALL, "%s:%d",__FUNCTION__, __LINE__); updateUI(); svcSleepThread(500000000);}
+#define TRACE() {newAppTop(DEFAULT_COLOR, SMALL, "%s:%d",__FUNCTION__, __LINE__); updateUI(); svcSleepThread(1000000000);}
 #define XTRACE(str, ...) {newAppTop(DEFAULT_COLOR, SMALL, str, __VA_ARGS__); updateUI(); svcSleepThread(500000000);}  
 
 #endif

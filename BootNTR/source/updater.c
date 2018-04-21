@@ -546,7 +546,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 				progbar->isHidden = true;
 				clearTop(false);
 				newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Download Failed");
-				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Error downloading file %d", fileDownCnt);
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nError downloading file %d", fileDownCnt);
 				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Err: 0x%08X", 5 | (ret << 8));
 				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nDo you want to retry?");
 				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, ""FONT_A": Retry       "FONT_B": Exit");
@@ -654,7 +654,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	brewFile = fopen(TOINSTALL_3DSX_PATH, "rb");
 	if (brewFile) {
 		fclose(brewFile);
-		FILE* endBrewFile = fopen_mkdir(FINAL_3DSX_PATH, "w");
+		FILE* endBrewFile = fopen_mkdir(FINAL_3DSX_PATH, "w"); // Generate path
 		if (!endBrewFile) return 6;
 		fclose(endBrewFile);
 		remove(FINAL_3DSX_PATH);

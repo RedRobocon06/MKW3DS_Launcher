@@ -183,6 +183,7 @@
     <ClCompile Include="source\files.c" />
     <ClCompile Include="source\graphics.c" />
     <ClCompile Include="source\json\json.c" />
+    <ClCompile Include="source\launcher.c" />
     <ClCompile Include="source\main.c" />
     <ClCompile Include="source\mainMenu.c" />
     <ClCompile Include="source\plgLoader.c" />

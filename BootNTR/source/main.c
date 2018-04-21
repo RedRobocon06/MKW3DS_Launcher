@@ -12,9 +12,12 @@ bool			  forceUpdate;
 bool			  restartneeded = false;
 char			  g_modversion[15] = { '\0' };
 u8				  g_launcherversion[3] = { '\0' };
+u8				  hmac[0x20];
 extern sprite_t*  updaterControlsText;
 extern char*      versionList[100];
 extern char textVersion[20];
+extern u64 launchAppID;
+extern FS_MediaType launchAppMedtype;
 
 void getModVersion() {
 	memset(g_modversion, 0, 15);
@@ -29,9 +32,25 @@ void getModVersion() {
 	file = fopen("/CTGP-7/config/expectedVer.bin", "r");
 	if (!file) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x1);
 	fread(g_launcherversion, 1, 3, file);
-	if (!g_modversion[0] || !g_launcherversion[0]) customBreak(0xDEADBEEF, 0xFEEDDEAD, 0x2, 0xBAAAAAAD);
+	if (!g_modversion[0] || !g_launcherversion[0]) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x2);
 	fclose(file);
 	file = NULL;
+}
+
+void finishUpdate() {
+	// Sigh... This is the only way to properly finish the 3dsx installation
+	FILE* tmpFile = NULL;
+	tmpFile = fopen(TOINSTALL_3DSX_PATH, "r");
+	if (tmpFile) {
+		fclose(tmpFile);
+		FILE* endBrewFile = fopen_mkdir(FINAL_3DSX_PATH, "w"); // Generate path
+		if (endBrewFile) {
+			fclose(endBrewFile);
+			remove(FINAL_3DSX_PATH);
+			copy_file(TOINSTALL_3DSX_PATH, TEMPORAL_3DSX_PATH);
+			rename(TOINSTALL_3DSX_PATH, FINAL_3DSX_PATH);
+		}
+	}
 }
 
 bool isExpectedVersion() {
@@ -51,7 +70,7 @@ bool isExpectedVersion() {
 	u32 vervar = (APP_VERSION_MAJOR) | (APP_VERSION_MINOR << 8) | (APP_VERSION_MICRO << 16);
 	FILE* file = NULL;
 	file = fopen("/CTGP-7/config/expectedVer.bin", "w");
-	if (!file) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x2);
+	if (!file) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x3);
 	fwrite(&vervar, 1, 3, file);
 	fclose(file);
 	return true;
@@ -64,6 +83,7 @@ int main(void)
     gfxInitDefault();
     romfsInit();
     ptmSysmInit();
+	acInit();
 
 	drawInit();
 
@@ -108,7 +128,7 @@ int main(void)
 	else {
 		newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "Checking for updates...");
 		updateUI();
-		acInit();
+		finishUpdate();
 		forceUpdate = updateAvailable();
 		initMainMenu();
 		removeAppTop();
@@ -126,5 +146,10 @@ int main(void)
     romfsExit();
     gfxExit();
     ptmSysmExit();
+	if (launchAppID && launchAppMedtype != 0xFF) {
+		APT_PrepareToDoApplicationJump(0, launchAppID, launchAppMedtype);
+		APT_DoApplicationJump(NULL, 0, hmac);
+		for (;;);
+	}
     return (0);
 }

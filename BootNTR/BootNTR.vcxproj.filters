@@ -202,5 +202,8 @@
     <ClCompile Include="source\allocator\newlibHeap.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="source\launcher.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
