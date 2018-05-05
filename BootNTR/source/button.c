@@ -1,7 +1,9 @@
 #include "button.h"
+#include "sound.h"
 #define MAX_BUTTON_COUNT 10
 
 static button_t* buttonList[MAX_BUTTON_COUNT] = { NULL };
+extern cwav_t                  *sfx_sound;
 
 static void addButtonToList(button_t* button) {
 	for (int i = 0; i < MAX_BUTTON_COUNT; i++) {
@@ -152,6 +154,7 @@ bool    drawAndExecuteButton(void *button)
 					buttonList[i]->isSelected = false;
 				}
 			}
+			PLAYBEEP();
 			((button_t *)button)->isSelected = true;
 			return false;
 		}

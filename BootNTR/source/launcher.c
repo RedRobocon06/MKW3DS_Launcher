@@ -6,12 +6,15 @@
 #include "clock.h"
 #include "drawableObject.h"
 #include "Unicode.h"
+#include "sound.h"
 
 static u64 MK7tids[] = { 0x0004000000030600ULL, 0x0004000000030700ULL, 0x0004000000030800ULL };
 static const u64 updtid = 0x0000000E00000000ULL;
 u64 launchAppID = 0;
 FS_MediaType launchAppMedtype = 0xFF;
 bool alreadyCancelled = false;
+
+extern cwav_t                  *sfx_sound;
 
 
 typedef struct TitleWithUpd_s
@@ -283,6 +286,7 @@ void launchMod() {
 		bool errorloop = true;
 		u32 keys = 0;
 		clearTop(false);
+		PLAYBOOP();
 		newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Failed to launch CTGP-7");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nSystem firmware or Luma CFW");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "versions are outdated.");
@@ -292,6 +296,7 @@ void launchMod() {
 			updateUI(); 
 			keys = hidKeysDown();
 			if (keys & KEY_B) {
+				PLAYBOOP();
 				errorloop = false;
 			}
 		}
@@ -307,6 +312,7 @@ void launchMod() {
 		bool errorloop = true;
 		u32 keys = 0;
 		clearTop(false);
+		PLAYBOOP();
 		newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Failed to launch CTGP-7");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Mario Kart 7 was not detected.");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nIf you are playing");
@@ -318,6 +324,7 @@ void launchMod() {
 			updateUI();
 			keys = hidKeysDown();
 			if (keys & KEY_B) {
+				PLAYBOOP();
 				errorloop = false;
 			}
 		}
@@ -352,6 +359,7 @@ void launchMod() {
 			launchControlsSprite->isHidden = false;
 			curropt++;
 			if (curropt >= gameListCount) curropt = gameListCount - 1;
+			else PLAYCLICK();
 			canLaunch = drawLaunchText(opts, curropt, gameCard, gameListCount, &autoLaunch);
 			setLaunchControlsMode(canLaunch ? 0 : 1);
 		}
@@ -362,6 +370,7 @@ void launchMod() {
 			launchControlsSprite->isHidden = false;
 			curropt--;
 			if (curropt < 0) curropt = 0;
+			else PLAYCLICK();
 			canLaunch = drawLaunchText(opts, curropt, gameCard, gameListCount, &autoLaunch);
 			setLaunchControlsMode(canLaunch ? 0 : 1);
 		}
@@ -372,6 +381,7 @@ void launchMod() {
 			launchControlsSprite->isHidden = false;
 			autoLaunch = false;
 			if (canLaunch) { 
+				PLAYBEEP();
 				saveOptToSave(opts, curropt, gameCard);
 				launchPluginLoader();
 				launchAppMedtype = (gameCard && curropt == 0) ? MEDIATYPE_GAME_CARD : MEDIATYPE_SD;
@@ -380,6 +390,7 @@ void launchMod() {
 			}
 		}
 		if (keys & KEY_B) {
+			PLAYBOOP();
 			updateProgBar->isHidden = true;
 			updateProgBar->rectangle->amount = 0;
 			launchControlsSprite->isHidden = false;

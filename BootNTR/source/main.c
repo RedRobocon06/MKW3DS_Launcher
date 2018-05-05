@@ -84,7 +84,7 @@ int main(void)
     romfsInit();
     ptmSysmInit();
 	acInit();
-
+	ndspInit();
 	drawInit();
 
 	getModVersion();
@@ -142,6 +142,7 @@ int main(void)
 	drawExit();
     acExit();
     amExit();
+	ndspExit();
     httpcExit();
     romfsExit();
     gfxExit();

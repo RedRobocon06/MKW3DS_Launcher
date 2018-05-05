@@ -4,6 +4,7 @@
 #include <time.h>
 #include "plgLoader.h"
 #include "clock.h"
+#include "sound.h"
 #include "drawableObject.h"
 
 extern drawableScreen_t	*botScreen;
@@ -27,6 +28,8 @@ extern bool restartneeded;
 
 extern u64 launchAppID;
 extern FS_MediaType launchAppMedtype;
+
+cwav_t                  *sfx_sound = NULL;
 
 
 static u32 getNextRbwColor(u32 counter) {
@@ -58,13 +61,12 @@ void greyExit() {
 
 void    selectVersion(u32 mode)
 {
-	if (userTouch) return;
+	if (userTouch && !optionSelected) return;
+	PLAYBEEP();
 	V32Button->disable(V32Button);
 	V33Button->disable(V33Button);
 	optionSelected = true;
 	optionTodo = mode;
-	V32Button->enable(V32Button);
-	V33Button->enable(V33Button);
 }
 
 void    initMainMenu(void)
@@ -89,6 +91,9 @@ void    initMainMenu(void)
 
     newSpriteFromPNG(&pressExitSprite, "romfs:/sprites/textSprites/pressBExit.png");
 
+	u32 ret = newCwav("romfs:/sound/beepboopclick.bcwav", &sfx_sound);
+	if (ret) customBreak(ret, 0xCACA, 0, 0);
+
     setSpritePos(pressExitSprite, 180.0f, 217.0f);
 
     changeBottomFooter(pressExitSprite); 
@@ -106,6 +111,7 @@ void    exitMainMenu(void)
 	tinyButtonBGSprite = NULL;
 	pressExitSprite = NULL;
 	clearUpdateSprites();
+	freeCwav(sfx_sound);
 }
 
 int     mainMenu(void)
@@ -140,6 +146,7 @@ int     mainMenu(void)
 		}
 		if (keys & (KEY_CPAD_UP | KEY_CPAD_DOWN | KEY_DUP | KEY_DDOWN)) {
 			if (Timer_HasTimePassed(250, timer2)) {
+				PLAYBEEP();
 				timer2 = Timer_Restart();
 				V32Button->isSelected = !V32Button->isSelected;
 				V33Button->isSelected = !V33Button->isSelected;
@@ -147,6 +154,7 @@ int     mainMenu(void)
 		}
 		if (exitkey & KEY_B) {
 			userTouch = true;
+			PLAYBOOP();
 		}
 		updateUI();
 		keys = hidKeysDown() | hidKeysHeld();
@@ -182,6 +190,8 @@ int     mainMenu(void)
 			default:
 				break;
 			}
+			V32Button->enable(V32Button);
+			V33Button->enable(V33Button);
 			optionSelected = false;
 			optionTodo = 0xFF;
 			hidScanInput();

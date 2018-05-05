@@ -1,5 +1,6 @@
 #include "main.h"
 #include "clock.h"
+#include "sound.h"
 
 sprite_t *changelogTextsprite = NULL;
 sprite_t *updaterControlsText = NULL;
@@ -17,6 +18,8 @@ extern sprite_t		 *topInfoSpriteUpd;
 
 extern bool restartneeded;
 extern bool forceUpdate;
+
+extern cwav_t                  *sfx_sound;
 
 void    InitUpdatesUI(void)
 {
@@ -109,6 +112,7 @@ void UpdaterMenuLoop() {
 			while (updaterLoop) {
 				keys = hidKeysDown();
 				if (keys & KEY_B) {
+					PLAYBOOP();
 					updaterLoop = false;
 				}
 				updateUI();
@@ -137,25 +141,26 @@ void UpdaterMenuLoop() {
 		}
 		if ((keys & KEY_UP) && allowcontrol) {
 			timer = Timer_Restart();
-			if (ver < totver - 1) ver++;
+			if (ver < totver - 1) { ver++; PLAYCLICK(); }
 			totPage = getChgPageCount(ver);
 			page = 0;
 		}
 		if ((keys & KEY_DOWN) && allowcontrol) {
 			timer = Timer_Restart();
-			if (ver > 0) ver--;
+			if (ver > 0) { ver--; PLAYCLICK(); }
 			totPage = getChgPageCount(ver);
 			page = 0;
 		}
 		if ((keys & KEY_RIGHT) && allowcontrol) {
 			timer = Timer_Restart();
-			if (page < totPage - 1) page++;
+			if (page < totPage - 1) { page++; PLAYCLICK(); }
 		}
 		if ((keys & KEY_LEFT) && allowcontrol) {
 			timer = Timer_Restart();
-			if (page > 0) page--;
+			if (page > 0) { page--; PLAYCLICK(); }
 		}
 		if (exitkey & KEY_B) {
+			PLAYBOOP();
 			updaterLoop = false;
 		}
 		updateUI();
@@ -164,6 +169,7 @@ void UpdaterMenuLoop() {
 			if (forceUpdate) {
 				updaterControlsText->isHidden = true;
 				appTop->sprite = topInfoSpriteUpd;
+				PLAYBEEP();
 				int ret = performUpdate(updateProgBar, &restartneeded);
 				updateProgBar->isHidden = true;
 				appTop->sprite = topInfoSprite;
@@ -175,9 +181,11 @@ void UpdaterMenuLoop() {
 					keysErr = hidKeysDown();
 					if (keysErr & KEY_B) {
 						errorLoop = false;
+						PLAYBOOP();
 					}
 					clearTop(false);
 					if (ret) {
+						PLAYBOOP();
 						newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Update Failed");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nThe update failed with");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "the following error code:");
@@ -186,6 +194,7 @@ void UpdaterMenuLoop() {
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server.");
 					}
 					else {
+						PLAYBEEP();
 						newAppTop(COLOR_GREEN, MEDIUM | BOLD | CENTER, "Update Succeded");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nUpdated to %s", versionList[totver - 1]);
 						if (restartneeded) {

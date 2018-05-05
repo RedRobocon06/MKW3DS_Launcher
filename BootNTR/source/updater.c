@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include <curl/curl.h>
 #include "Unicode.h"
+#include "sound.h"
 
 typedef struct downFileInfo_s
 {
@@ -36,6 +37,8 @@ char progTextBuf[2][20];
 char* versionList[50] = { NULL };
 extern char g_modversion[15];
 char* changelogList[50][30] = { NULL };
+
+extern cwav_t                  *sfx_sound;
 
 bool isWifiAvailable() {
 	u32 wifiStatus;
@@ -535,6 +538,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 			remove(tmpbuf1);
 		}
 		else if (downfileinfo[i]->mode == 'M') {
+			PLAYCLICK();
 			tmpbuf1 = concat(FILE_DOWN_PREFIX, downfileinfo[i]->fileName);
 			tmpbuf2 = concat(DEFAULT_MOD_PATH, downfileinfo[i]->fileName);
 			progbar->isHidden = false;
@@ -545,6 +549,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 				u32 keys = 0;
 				progbar->isHidden = true;
 				clearTop(false);
+				PLAYBOOP();
 				newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Download Failed");
 				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nError downloading file %d", fileDownCnt);
 				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Err: 0x%08X", 5 | (ret << 8));
@@ -552,6 +557,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, ""FONT_A": Retry       "FONT_B": Exit");
 				while (errorloop) {
 					if (keys & KEY_A) {
+						PLAYBEEP();
 						errorloop = false;
 						i--;
 						totFileDownCnt--;

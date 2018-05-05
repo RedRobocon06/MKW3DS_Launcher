@@ -152,6 +152,7 @@
     <ClInclude Include="source\drawableObject.h" />
     <ClInclude Include="source\graphics.h" />
     <ClInclude Include="source\clock.h" />
+    <ClInclude Include="source\sound.h" />
     <ClInclude Include="source\json\json.h" />
     <ClInclude Include="source\main.h" />
     <ClInclude Include="source\mysvcs.h" />
@@ -189,6 +190,7 @@
     <ClCompile Include="source\plgLoader.c" />
     <ClCompile Include="source\png.c" />
     <ClCompile Include="source\clock.c" />
+    <ClCompile Include="source\sound.c" />
     <ClCompile Include="source\updater.c">
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\devkitPro\portlibs\3ds\include;C:\devkitPro\libctru\include;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>

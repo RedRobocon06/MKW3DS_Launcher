@@ -116,6 +116,9 @@
     <ClInclude Include="source\Unicode.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="source\sound.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\ctrcommon\source\ctrcommon\app.cpp">
@@ -203,6 +206,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="source\launcher.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\sound.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
