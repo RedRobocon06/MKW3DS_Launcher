@@ -30,6 +30,7 @@ extern u64 launchAppID;
 extern FS_MediaType launchAppMedtype;
 
 cwav_t                  *sfx_sound = NULL;
+cwav_t					*lag_sound = NULL;
 
 
 static u32 getNextRbwColor(u32 counter) {
@@ -91,9 +92,6 @@ void    initMainMenu(void)
 
     newSpriteFromPNG(&pressExitSprite, "romfs:/sprites/textSprites/pressBExit.png");
 
-	u32 ret = newCwav("romfs:/sound/beepboopclick.bcwav", &sfx_sound);
-	if (ret) customBreak(ret, 0xCACA, 0, 0);
-
     setSpritePos(pressExitSprite, 180.0f, 217.0f);
 
     changeBottomFooter(pressExitSprite); 
@@ -112,6 +110,7 @@ void    exitMainMenu(void)
 	pressExitSprite = NULL;
 	clearUpdateSprites();
 	freeCwav(sfx_sound);
+	freeCwav(lag_sound);
 }
 
 int     mainMenu(void)
@@ -152,6 +151,12 @@ int     mainMenu(void)
 				V33Button->isSelected = !V33Button->isSelected;
 			}
 		}
+		if (keys & KEY_Y) {
+			STARTLAG();
+		}
+		if (keys & KEY_X) {
+			STOPLAG();
+		}
 		if (exitkey & KEY_B) {
 			userTouch = true;
 			PLAYBOOP();
@@ -166,6 +171,7 @@ int     mainMenu(void)
 				greyBottomScreen(true);
 				V33Button->isGreyedOut = true;
 				pressExitSprite->isHidden = true;
+				changeTopSprite(3);
 				launchMod();
 				if (!(u32)(launchAppID)) {
 					V33Button->isGreyedOut = false;
@@ -176,6 +182,7 @@ int     mainMenu(void)
 				else {
 					userTouch = true;
 				}
+				changeTopSprite(0);
 				break;
 			case 2:
 				greyBottomScreen(true);

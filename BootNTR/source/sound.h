@@ -122,20 +122,21 @@ typedef struct cwav_s {
 	cwavInfoBlock_t* cwavInfo;
 	cwavDataBlock_t* cwavData;
 	cwavchannelInfo_t** channelInfos;
-	cwavDSPADPCMInfo_t** DSPADPCMInfos;
-	int playingchanids[2];
-	ndspAdpcmData adpcmData[2];
-	ndspWaveBuf wavebuf[2];
-	float mix[2][16];
+	cwavIMAADPCMInfo_t** IMAADPCMInfos;
+	u32 channelcount;
+	int* playingchanids;
 } cwav_t;
 
 u32 newCwav(char* filename, cwav_t** out);
 bool playcwav(cwav_t* cwav, int channel1, int channel2);
-void stopcwav(cwav_t* cwav);
+void stopcwav(cwav_t* cwav, int channel);
 void freeCwav(cwav_t* cwav);
 
 #define PLAYBEEP() {playcwav(sfx_sound, 0, -1);}
 #define PLAYBOOP() {playcwav(sfx_sound, 1, -1);}
 #define PLAYCLICK() {playcwav(sfx_sound, 2, -1);}
+
+#define STARTLAG() {playcwav(lag_sound, 0, -1);}
+#define STOPLAG() {stopcwav(lag_sound, 0);}
 
 #endif

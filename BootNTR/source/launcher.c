@@ -286,7 +286,6 @@ void launchMod() {
 		bool errorloop = true;
 		u32 keys = 0;
 		clearTop(false);
-		PLAYBOOP();
 		newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Failed to launch CTGP-7");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nSystem firmware or Luma CFW");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "versions are outdated.");
@@ -312,7 +311,6 @@ void launchMod() {
 		bool errorloop = true;
 		u32 keys = 0;
 		clearTop(false);
-		PLAYBOOP();
 		newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Failed to launch CTGP-7");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Mario Kart 7 was not detected.");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nIf you are playing");

@@ -19,6 +19,7 @@ void    changeBottomFooter(sprite_t *footer);
 void    changeBottomHeader(sprite_t *header);
 void    clearTopScreen(void);
 void    clearBottomScreen(void);
+void    changeTopSprite(int id);
 
 extern appInfoObject_t  *appTop;
 extern appInfoObject_t  *appBottom;

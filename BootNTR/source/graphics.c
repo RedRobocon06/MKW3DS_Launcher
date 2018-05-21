@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include "drawableObject.h"
 #include "button.h"
+#include "sound.h"
 
 sprite_t         *bottomSprite = NULL;
 sprite_t         *topSprite = NULL;
@@ -8,14 +9,19 @@ sprite_t         *topSprite = NULL;
 sprite_t         *topInfoSprite = NULL;
 sprite_t		 *topInfoSpriteUpd = NULL;
 sprite_t         *launchControlsSprite = NULL;
+sprite_t		 *launcherText = NULL;
+sprite_t         *installerText = NULL;
+extern sprite_t  *changelogTextsprite;
 drawableScreen_t *botScreen = NULL;
 drawableScreen_t *topScreen = NULL;
-appInfoObject_t         *appTop = NULL;
+appInfoObject_t  *appTop = NULL;
 
 extern char g_modversion[15];
 
 char textVersion[20] = { 0 };
 
+extern cwav_t* sfx_sound;
+extern cwav_t* lag_sound;
 
 void    initUI(void)
 {
@@ -28,6 +34,12 @@ void    initUI(void)
 	newSpriteFromPNG(&topInfoSpriteUpd, "romfs:/sprites/topInfoBackgroundUpd.png");
 
 	newSpriteFromPNG(&launchControlsSprite, "romfs:/sprites/textSprites/launchControlsSprite.png");
+
+	newSpriteFromPNG(&installerText, "romfs:/sprites/textSprites/installerText.png");
+	newSpriteFromPNG(&launcherText,  "romfs:/sprites/textSprites/launcherText.png");
+
+	setSpritePos(installerText, 150.f, 0.f);
+	setSpritePos(launcherText, 150.f, 0.f);
 
     setSpritePos(topSprite, 0, 0);
     setSpritePos(bottomSprite, 0, 0);
@@ -42,8 +54,27 @@ void    initUI(void)
 	setSpritePos(topInfoSpriteUpd, 50, 20);
     appTop = newAppInfoObject(topInfoSprite, 14, 62.0f, 30.0f);
     appInfoSetTextBoundaries(appTop, 338.0f, 210.0f);
+
+	newCwav("romfs:/sound/beepboopclick.bcwav", &sfx_sound);
+	newCwav("romfs:/sound/lag.bcwav", &lag_sound);
 	
     updateUI();
+}
+
+void changeTopSprite(int id) {
+	switch (id) {
+	case 1:
+		changeTopHeader(changelogTextsprite);
+		break;
+	case 2:
+		changeTopHeader(installerText);
+		break;
+	case 3:
+		changeTopHeader(launcherText);
+		break;
+	default:
+		changeTopHeader(NULL);
+	}
 }
 
 void    exitUI(void)
@@ -53,6 +84,8 @@ void    exitUI(void)
     deleteSprite(topSprite);
     deleteSprite(topInfoSprite);
 	deleteSprite(launchControlsSprite);
+	deleteSprite(launcherText);
+	deleteSprite(installerText);
 }
 
 static inline void drawUITop(void)
@@ -61,10 +94,12 @@ static inline void drawUITop(void)
     
     topScreen->draw(topScreen);
     setTextColor(COLOR_BLANK);
-	if (textVersion[0] == '\0') {
-		sprintf(textVersion, "Ver. %s", g_modversion);
+	if (g_modversion[0]) {
+		if (textVersion[0] == '\0') {
+			sprintf(textVersion, "Ver. %s", g_modversion);
+		}
+		renderText(1.0f, 1.0f, 0.4f, 0.45f, false, textVersion, NULL, 0.0f);
 	}
-    renderText(1.0f, 1.0f, 0.4f, 0.45f, false, textVersion, NULL, 0.0f);
     drawAppInfo(appTop);
 }
 

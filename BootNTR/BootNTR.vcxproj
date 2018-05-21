@@ -81,6 +81,7 @@
     <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
     <NMakeForcedIncludes>C:\devkitPro\libctru\include;$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <IncludePath>C:\devkitPro\portlibs\3ds\include;C:\devkitPro\libctru\include;$(IncludePath)</IncludePath>
+    <NMakeIncludeSearchPath>C:\devkitPro\libctru\include;</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -145,6 +146,7 @@
     <ClInclude Include="lib\ctrcommon\source\ctrcommon\service.hpp" />
     <ClInclude Include="source\allocator\newlibHeap.h" />
     <ClInclude Include="source\appInfo.h" />
+    <ClInclude Include="source\Archives.h" />
     <ClInclude Include="source\button.h" />
     <ClInclude Include="source\Credits.h" />
     <ClInclude Include="source\csvc.h" />
@@ -177,6 +179,7 @@
     <ClCompile Include="lib\ctrcommon\source\ctrcommon\ui.cpp" />
     <ClCompile Include="source\allocator\newlibHeap.c" />
     <ClCompile Include="source\appInfo.c" />
+    <ClCompile Include="source\Archives.c" />
     <ClCompile Include="source\button.c" />
     <ClCompile Include="source\common_functions.c" />
     <ClCompile Include="source\draw.c" />
@@ -191,6 +194,7 @@
     <ClCompile Include="source\png.c" />
     <ClCompile Include="source\clock.c" />
     <ClCompile Include="source\sound.c" />
+    <ClCompile Include="source\installer.c" />
     <ClCompile Include="source\updater.c">
       <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\devkitPro\portlibs\3ds\include;C:\devkitPro\libctru\include;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>

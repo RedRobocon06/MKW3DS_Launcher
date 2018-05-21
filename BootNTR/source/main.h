@@ -194,7 +194,9 @@ Result  bnInitParamsByHomeMenu(void);
 
 bool    updateAvailable(void);
 bool	downloadChangelog(void);
-int		downloadFile(char* URL, char* filepath, progressbar_t* progbar);
+int		downloadFile(char* URL, char* filepath, progressbar_t* progbar, int mode);
+int     downloadString(char* URL, char** out);
+char*	getProgText(float prog, int index);
 int		performUpdate(progressbar_t* progbar, bool* restartNeeded);
 FILE* fopen_mkdir(const char* name, const char* mode);
 void setControlsMode(int mode);
@@ -211,4 +213,8 @@ void    InitUpdatesUI(void);
 ** launcher.c
 */
 void launchMod();
+/*
+** installer.c
+*/
+u64 installMod(progressbar_t* progbar, u64 zipSize);
 #endif

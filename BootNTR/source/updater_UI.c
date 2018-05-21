@@ -20,6 +20,7 @@ extern bool restartneeded;
 extern bool forceUpdate;
 
 extern cwav_t                  *sfx_sound;
+extern cwav_t                  *lag_sound;
 
 void    InitUpdatesUI(void)
 {
@@ -64,7 +65,7 @@ void setControlsMode(int mode) {
 
 void ExitUpdatesUI(void) {
 	changeTopFooter(NULL);
-	changeTopHeader(NULL);
+	changeTopSprite(0);
 	clearTop(false);
 	removeAppTop();
 }
@@ -171,6 +172,7 @@ void UpdaterMenuLoop() {
 				appTop->sprite = topInfoSpriteUpd;
 				PLAYBEEP();
 				int ret = performUpdate(updateProgBar, &restartneeded);
+				STOPLAG();
 				updateProgBar->isHidden = true;
 				appTop->sprite = topInfoSprite;
 				updaterControlsText->isHidden = false;
@@ -185,7 +187,6 @@ void UpdaterMenuLoop() {
 					}
 					clearTop(false);
 					if (ret) {
-						PLAYBOOP();
 						newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Update Failed");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nThe update failed with");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "the following error code:");
@@ -194,7 +195,6 @@ void UpdaterMenuLoop() {
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server.");
 					}
 					else {
-						PLAYBEEP();
 						newAppTop(COLOR_GREEN, MEDIUM | BOLD | CENTER, "Update Succeded");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nUpdated to %s", versionList[totver - 1]);
 						if (restartneeded) {
@@ -216,7 +216,7 @@ void UpdaterMenuLoop() {
 
 void UpdatesMenu() {
 	changeTopFooter(updaterControlsText);
-	changeTopHeader(changelogTextsprite);
+	changeTopSprite(1);
 	UpdaterMenuLoop();
 	ExitUpdatesUI();
 }

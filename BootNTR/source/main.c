@@ -2,6 +2,8 @@
 #include "draw.h"
 #include "button.h"
 #include <time.h>
+#include "Unicode.h"
+#include "sound.h"
 
 u8                *tmpBuffer;
 char              *g_primary_error = NULL;
@@ -18,14 +20,22 @@ extern char*      versionList[100];
 extern char textVersion[20];
 extern u64 launchAppID;
 extern FS_MediaType launchAppMedtype;
+extern progressbar_t *updateProgBar;
+extern sprite_t* topInfoSpriteUpd;
+
+extern cwav_t* sfx_sound;
+extern cwav_t* lag_sound;
 
 void getModVersion() {
 	memset(g_modversion, 0, 15);
 	FILE* file = NULL;
 	file = fopen("/CTGP-7/config/version.bin", "r");
-	if (!file) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x0);
+	if (!file) {
+		return;
+	}
 	fread(g_modversion, 1, 15, file);
 	fclose(file);
+	if (!g_modversion[0]) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x0);
 	file = NULL;
 	textVersion[0] = '\0';
 	memset(g_launcherversion, 0, 3);
@@ -84,42 +94,130 @@ int main(void)
     romfsInit();
     ptmSysmInit();
 	acInit();
-	ndspInit();
+	csndInit();
 	drawInit();
 
 	getModVersion();
-	bool isProperVer = isExpectedVersion();
+	bool isProperVer = false;
+	if (g_modversion[0])
+		isProperVer = isExpectedVersion();
     initUI();
 	InitUpdatesUI();
 	if (!isProperVer) {
-		changeTopFooter(updaterControlsText);
-		updaterControlsText->isHidden = false;
-		setControlsMode(2);
-		clearTop(false);
-		newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Version mismatch error");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "This app version is older");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "than a previous launched one.");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "App version: %d.%d.%d", APP_VERSION_MAJOR, APP_VERSION_MINOR, APP_VERSION_MICRO);
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Expected version: %d.%d.%d", g_launcherversion[0], g_launcherversion[1], g_launcherversion[2]);
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER | BOLD, "\nTo fix the error:");
-		if (!envIsHomebrew()) {
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "- Install the following cia");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"FINAL_CIA_PATH);
+		if (!g_modversion[0]) {
+			changeTopSprite(2);
+			FILE* zipFile = NULL;
+			u64 zipSize = 0;
+			zipFile = fopen("/CTGP-7.zip", "rb");
+			if (zipFile) {
+				fseek(zipFile, 0, SEEK_END);
+				zipSize = ftell(zipFile);
+				fclose(zipFile);
+			}
+			clearTop(false);
+			newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "CTGP-7 installer");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo CTGP-7 files detected. Would you");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install from CTGP-7.zip?\n");
+			if (zipFile) {
+				newAppTop(COLOR_GREEN, MEDIUM | CENTER, "File found!\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
+			}
+			else {
+				newAppTop(COLOR_RED, MEDIUM | CENTER, "File not found in the SD root.");
+				newAppTop(COLOR_RED, MEDIUM | CENTER, "(This file can be found");
+				newAppTop(COLOR_RED, MEDIUM | CENTER, "searching in google.)\n");
+				newAppTop(COLOR_GREY, MEDIUM | CENTER, FONT_A": Install");
+			}
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+			u32 keys = 0;
+			bool installLoop = true;
+			while (installLoop) {
+				if ((keys & KEY_A) && zipFile) {
+					PLAYBEEP();
+					u64 ret = installMod(updateProgBar, zipSize);
+					u32 retlow = (u32)ret;
+					u32 rethigh = (u32)(ret >> 32);
+					clearTop(false);
+					if (!retlow) {
+						newAppTop(COLOR_GREEN, BOLD | MEDIUM | CENTER, "Installation successful!");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\n"FONT_B": Exit");
+					}
+					else if (retlow == 2) {
+						newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNot enough free space, %dMB", rethigh);
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "are needed to install the mod.");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "If you can't free more space");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "install the mod manually.\n");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+					}
+					else if (retlow == 13) {
+						newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Installer and zip version");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "mismatch, make sure you have");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "both the latest zip and installer.\n");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+					}
+					else {
+						newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nError occured during");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "installation, error code:\n");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "%08X %08X\n", retlow, rethigh);
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "You can ask for help in the");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server.\n");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+					}
+					u32 keys2 = 0;
+					bool installLoop2 = true;
+					while (installLoop2)
+					{
+						if (keys2 & KEY_B) {
+							PLAYBOOP();
+							installLoop2 = false;
+						}
+						updateUI();
+						keys2 = hidKeysDown();
+					}
+					installLoop = false;
+				}
+				if (keys & KEY_B) {
+					PLAYBOOP();
+					installLoop = false;
+				}
+				updateUI();
+				keys = hidKeysDown();
+			}
 		}
 		else {
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "- Copy this file");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"TEMPORAL_3DSX_PATH);
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "to this location");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"FINAL_3DSX_PATH);
-		}
-		u32 keys = 0;
-		bool errorLoop = true;
-		while (errorLoop) {
-			if (keys & KEY_B) {
-				errorLoop = false;
+			changeTopFooter(updaterControlsText);
+			updaterControlsText->isHidden = false;
+			setControlsMode(2);
+			clearTop(false);
+			newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Version mismatch error");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "This app version is older");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "than a previous launched one.");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "App version: %d.%d.%d", APP_VERSION_MAJOR, APP_VERSION_MINOR, APP_VERSION_MICRO);
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Expected version: %d.%d.%d", g_launcherversion[0], g_launcherversion[1], g_launcherversion[2]);
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER | BOLD, "\nTo fix the error:");
+			if (!envIsHomebrew()) {
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "- Install the following cia");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"FINAL_CIA_PATH);
 			}
-			updateUI();
-			keys = hidKeysDown();
+			else {
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "- Copy this file");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"TEMPORAL_3DSX_PATH);
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "to this location");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"FINAL_3DSX_PATH);
+			}
+			u32 keys = 0;
+			bool errorLoop = true;
+			while (errorLoop) {
+				if (keys & KEY_B) {
+					errorLoop = false;
+					PLAYBOOP();
+				}
+				updateUI();
+				keys = hidKeysDown();
+			}
 		}
 		greyExit();
 		updateUI();
@@ -131,10 +229,9 @@ int main(void)
 		finishUpdate();
 		forceUpdate = updateAvailable();
 		initMainMenu();
+		clearTop(false);
 		removeAppTop();
-		//
 		mainMenu();
-		//
 	}
 	drawEndFrame();
 	exitMainMenu();
@@ -142,7 +239,7 @@ int main(void)
 	drawExit();
     acExit();
     amExit();
-	ndspExit();
+	csndExit();
     httpcExit();
     romfsExit();
     gfxExit();

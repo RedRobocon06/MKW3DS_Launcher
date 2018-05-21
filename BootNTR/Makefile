@@ -11,7 +11,7 @@ endif
 
 # COMMON CONFIGURATION #
 
-NAME := CTGP-7
+NAME := CTGP-7_Installer
 
 
 BUILD_DIR := build
@@ -26,7 +26,7 @@ LIBRARIES := citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
 
 VERSION_MAJOR := 1
 VERSION_MINOR := 0
-VERSION_MICRO := 3
+VERSION_MICRO := 0
 
 
 BUILD_FLAGS := -march=armv6k -mtune=mpcore -mfloat-abi=hard
@@ -47,7 +47,7 @@ RUN_FLAGS :=
 
 ifeq ($(TARGET),$(filter $(TARGET),3DS WIIU))
 	TITLE := CTGP-7
-    DESCRIPTION := Launcher & Updater
+    DESCRIPTION := Installer
     AUTHOR := dshack.org
 endif
 
