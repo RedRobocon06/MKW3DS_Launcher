@@ -136,7 +136,10 @@ void freeCwav(cwav_t* cwav);
 #define PLAYBOOP() {playcwav(sfx_sound, 1, -1);}
 #define PLAYCLICK() {playcwav(sfx_sound, 2, -1);}
 
+
 #define STARTLAG() {playcwav(lag_sound, 0, -1);}
 #define STOPLAG() {stopcwav(lag_sound, 0);}
 
+#define STARTCRED() {playcwav(cred_sound, 0, -1);}
+#define STOPCRED() {stopcwav(cred_sound, 0);}
 #endif

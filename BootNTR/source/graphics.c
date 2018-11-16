@@ -11,6 +11,7 @@ sprite_t		 *topInfoSpriteUpd = NULL;
 sprite_t         *launchControlsSprite = NULL;
 sprite_t		 *launcherText = NULL;
 sprite_t         *installerText = NULL;
+sprite_t         *creditsText = NULL;
 extern sprite_t  *changelogTextsprite;
 drawableScreen_t *botScreen = NULL;
 drawableScreen_t *topScreen = NULL;
@@ -71,6 +72,9 @@ void changeTopSprite(int id) {
 		break;
 	case 3:
 		changeTopHeader(launcherText);
+		break;
+	case 4:
+		changeTopHeader(creditsText);
 		break;
 	default:
 		changeTopHeader(NULL);

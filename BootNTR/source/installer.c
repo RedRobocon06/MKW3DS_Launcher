@@ -28,6 +28,23 @@ Result deleteDirectory(char* sdDir) {
 	return ret;
 }
 
+Result existsDirectory(char *sdDir) {
+	FS_Archive sd;
+	FS_Path sd_path = { PATH_EMPTY, 0, NULL };
+	Result ret = 0;
+	Handle dir = 0;
+	ret = FSUSER_OpenArchive(&sd, ARCHIVE_SDMC, sd_path);
+	if (ret < 0) return false;
+	ret = FSUSER_OpenDirectory(&dir, sd, fsMakePath(PATH_ASCII, sdDir));
+	if (ret >= 0) {
+		FSDIR_Close(dir);
+		FSUSER_CloseArchive(sd);
+		return true;
+	}
+	FSUSER_CloseArchive(sd);
+	return false;
+}
+ 
 Result renameDir(char* src, char* dst) {
 	FS_Archive sd;
 	FS_Path sd_path = { PATH_EMPTY, 0, NULL };
@@ -70,6 +87,12 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Preparing to install");
 	updateUI();
+	if (existsDirectory("/CTGP-7/savefs")) {
+		if (renameDir("/CTGP-7/savefs", "/CTGP-7savebak")) {
+			STOPLAG();
+			return 15;
+		}
+	}
 	deleteDirectory("/CTGP-7");
 	deleteDirectory("/CTGP-7tmp");
 	u64 freeBytes = 0;
@@ -88,6 +111,10 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 		return 3 | ((u64)ret << 32);
 	}
 	Zip* modZip = ZipOpen("/CTGP-7.zip");
+	if (modZip == NULL) {
+		STOPLAG();
+		return 14;
+	}
 	chdir("/CTGP-7tmp");
 	clearTop(false);
 	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");

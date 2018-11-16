@@ -30,7 +30,7 @@ static progressbar_t* file_progbar = NULL;
 static int file_singlePixel = -1;
 static int fileDownCnt = 0;
 static int totFileDownCnt = 0;
-char updatingVer[15] = { 0 };
+char updatingVer[30] = { 0 };
 FILE *downfile = NULL;
 char progTextBuf[2][20];
 
@@ -47,6 +47,36 @@ bool isWifiAvailable() {
 	return (bool)wifiStatus;
 }
 
+void    DisableSleep(void)
+{
+	u8  reg;
+
+	if (R_FAILED(mcuHwcInit()))
+		return;
+
+	if (R_FAILED(MCUHWC_ReadRegister(0x18, &reg, 1)))
+		return;
+
+	reg |= 0x6C; ///< Disable home btn & shell state events
+	MCUHWC_WriteRegister(0x18, &reg, 1);
+	mcuHwcExit();
+}
+
+void    EnableSleep(void)
+{
+	u8  reg;
+
+	if (R_FAILED(mcuHwcInit()))
+		return;
+
+	if (R_FAILED(MCUHWC_ReadRegister(0x18, &reg, 1)))
+		return;
+
+	reg &= ~0x6C; ///< Enable home btn & shell state events
+	MCUHWC_WriteRegister(0x18, &reg, 1);
+	mcuHwcExit();
+}
+
 char* getProgText(float prog, int index) {
 	if (prog < (1024 * 1024)) {
 		sprintf(progTextBuf[index], "%.2f KB", prog / 1024);
@@ -60,18 +90,10 @@ char* getProgText(float prog, int index) {
 
 void updateTop(curl_off_t dlnow, curl_off_t dltot, float speed) {
 	clearTop(false);
-	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Updating to %s", updatingVer);
+	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, updatingVer);
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading Files");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", fileDownCnt, totFileDownCnt);
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n%s / %s", getProgText(dlnow, 0), getProgText(dltot, 1));
-	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
-}
-
-void updateTopZip(curl_off_t dlnow, curl_off_t dltot, float speed) {
-	clearTop(false);
-	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Updating to %s", updatingVer);
-	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading CTGP-7.zip\n\n");
-	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%s / %s", getProgText(dlnow, 0), getProgText(dltot, 1));
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
 }
 
@@ -122,32 +144,6 @@ int file_progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, 
 		updateUI();
 		oldprogress = dlnow;
 		
-	}
-	return 0;
-};
-
-int zip_file_progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
-	if (!(dltotal && dlnow)) return 0;
-	static float oldprogress = 0;
-	static u64 timer = 0;
-	static u64 timer2 = 0;
-	if (file_singlePixel == -1) { //Not initialized
-		oldprogress = 0;
-		timer2 = 0;
-		timer = Timer_Restart();
-	}
-	file_singlePixel = dltotal / (curl_off_t)(file_progbar->rectangle->width);
-	if (dlnow - oldprogress >= file_singlePixel) {
-		file_progbar->rectangle->amount = ((float)dlnow) / ((float)dltotal);
-		timer2 = Timer_Restart();
-		u64 progmsec = getTimeInMsec(timer2 - timer);
-		timer = Timer_Restart();
-		if (!progmsec) progmsec = 1;
-		curl_off_t progbytes = dlnow - oldprogress;
-		updateTopZip(dlnow, dltotal, ((float)progbytes) / ((float)progmsec));
-		updateUI();
-		oldprogress = dlnow;
-
 	}
 	return 0;
 };
@@ -229,8 +225,8 @@ static size_t file_handle_data(char *ptr, size_t size, size_t nmemb, void *userd
 	return bsz;
 }
 
-int downloadFile(char* URL, char* filepath, progressbar_t* progbar, int mode) {
-	
+int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
+
 	int retcode = 0;
 	
 	char cerr[CURL_ERROR_SIZE];
@@ -255,15 +251,9 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar, int mode) {
 	progbar->isHidden = false;
 	progbar->rectangle->amount = 0;
 	clearTop(false);
-	if (!mode) {
-		newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Updating to %s", updatingVer);
-		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading Files");
-		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", fileDownCnt, totFileDownCnt);
-	}
-	else {
-		newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
-		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading CTGP-7.zip");
-	}
+	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, updatingVer);
+	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading Files");
+	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", fileDownCnt, totFileDownCnt);
 	updateUI();
 	
 	CURL *hnd = curl_easy_init();
@@ -272,9 +262,10 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar, int mode) {
 	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 0L);
 	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
+	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(hnd, CURLOPT_ACCEPT_ENCODING, "gzip");
 	curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
-	curl_easy_setopt(hnd, CURLOPT_XFERINFOFUNCTION, mode ? zip_file_progress_callback : file_progress_callback);
+	curl_easy_setopt(hnd, CURLOPT_XFERINFOFUNCTION, file_progress_callback);
 	curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, file_handle_data);
 	curl_easy_setopt(hnd, CURLOPT_ERRORBUFFER, cerr);
@@ -315,6 +306,8 @@ exit:
 
 int downloadString(char* URL, char** out) {
 
+	DisableSleep();
+
 	int retcode = 0;
 
 	char cerr[CURL_ERROR_SIZE];
@@ -335,6 +328,8 @@ int downloadString(char* URL, char** out) {
 	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
+	curl_easy_setopt(hnd, CURLOPT_ACCEPT_ENCODING, "gzip");
+	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
 	curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, handle_data);
@@ -365,6 +360,8 @@ exit:
 	str_result_buf = NULL;
 	str_result_written = 0;
 	str_result_sz = 0;
+
+	EnableSleep();
 
 	return retcode;
 }
@@ -482,7 +479,29 @@ static void writeFaultyURL(char* URL) {
 	fclose(tmpfl);
 }
 
+int updateLuma3DS(progressbar_t* progbar) {
+	strcpy(updatingVer, "Luma plugin loader");
+	totFileDownCnt = 1;
+	fileDownCnt = 1;
+	progbar->rectangle->amount = 0;
+	progbar->isHidden = false;
+	DisableSleep();
+	int retcode = downloadFile(PLGLDR_URL, PLGLDR_TMP, progbar);
+	if (retcode == 0) {
+		remove("/boot.firm.bak");
+		rename("/boot.firm", "/boot.firm.bak");
+		rename(PLGLDR_TMP, "/boot.firm");
+	}
+	EnableSleep();
+	progbar->isHidden = true;
+	updatingVer[0] = '\0';
+	totFileDownCnt = 0;
+	fileDownCnt = 0;
+	return retcode;
+}
+
 int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
+	DisableSleep();
 	int index = -1;
 	for (int i = 0; versionList[i]; i++) if (strcmp(g_modversion, versionList[i]) == 0) index = i;
 	if (index == -1) return 1;
@@ -505,6 +524,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	while (versionList[index]) {
 		if (!isWifiAvailable()) {
 			freeFileInfo(downfileinfo);
+			EnableSleep();
 			return 2;
 		}
 		char* downstr = NULL;
@@ -519,6 +539,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 			}
 			writeFaultyURL(URL);
 			freeFileInfo(downfileinfo);
+			EnableSleep();
 			return 3 | (retcode << 8);
 		}
 		free(URL);
@@ -530,7 +551,10 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		else {
 			downfileinfo = realloc(downfileinfo, (downfileinfocnt + filecount) * 4); 
 		}
-		if (!downfileinfo) return 4;
+		if (!downfileinfo) {
+			EnableSleep();
+			return 4;
+		}
 		int index1 = 0; 
 		for (int i = 0; i < filecount; i++) downfileinfo[i + downfileinfocnt] = createNewFileInfo(index); 
 		token = strtok_r(downstr, "\n", &end_str);
@@ -546,7 +570,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		index++;
 		free(downstr);
 	}
-	strcpy(updatingVer, versionList[index - 1]);
+	sprintf(updatingVer, "Updating to %s", versionList[index - 1]);
 	downfileinfo = realloc(downfileinfo, (downfileinfocnt + 1) * 4); 
 	if (!downfileinfo) svcBreak((UserBreakType)0); 
 	downfileinfo[downfileinfocnt] = NULL;
@@ -587,7 +611,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 			tmpbuf2 = concat(DEFAULT_MOD_PATH, downfileinfo[i]->fileName);
 			progbar->isHidden = false;
 			progbar->rectangle->amount = 0;
-			int ret = downloadFile(tmpbuf1, tmpbuf2, progbar, 0);
+			int ret = downloadFile(tmpbuf1, tmpbuf2, progbar);
 			if (ret) {
 				bool errorloop = true;
 				u32 keys = 0;
@@ -604,11 +628,13 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 						PLAYBEEP();
 						errorloop = false;
 						i--;
-						totFileDownCnt--;
+						//totFileDownCnt--; //oops wrong
+						fileDownCnt--;
 					}
 					if (keys & KEY_B) {
 						freeFileInfo(downfileinfo);
 						writeFaultyURL(tmpbuf1);
+						EnableSleep();
 						return 5 | (ret << 8);
 					}
 					updateUI();
@@ -637,7 +663,10 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 			Handle handle;
 			Result ret = 0;
 			ret = AM_StartCiaInstall(MEDIATYPE_SD, &handle);
-			if (ret < 0) return ret;
+			if (ret < 0) {
+				EnableSleep();
+				return ret;
+			}
 			fseek(ciaFile, 0L, SEEK_END);
 			u32 fileSize = ftell(ciaFile);
 			u32 filePos = 0;
@@ -663,6 +692,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 					fclose(ciaFile);
 					AM_CancelCIAInstall(handle);
 					amExit();
+					EnableSleep();
 					return ret;
 				}
 				filePos += bytesWritten;
@@ -675,8 +705,8 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 					timer1 = Timer_Restart();
 					speed = ((float)(filePos - oldprog)) / ((float)delaymsec);
 					clearTop(false);
-					newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Updating to %s", updatingVer);
-					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Updating App", updatingVer);
+					newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, updatingVer);
+					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Updating App");
 					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\n%s / %s", getProgText(filePos, 0), getProgText(fileSize, 1));
 					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
 					updateUI();
@@ -685,8 +715,8 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 			}
 			progbar->rectangle->amount = 1;
 			clearTop(false);
-			newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Updating to %s", updatingVer);
-			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Updating App", updatingVer);
+			newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, updatingVer);
+			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Updating App");
 			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\n%s / %s", getProgText(filePos, 0), getProgText(fileSize, 1));
 			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
 			updateUI();
@@ -695,7 +725,10 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 			free(tmpbuf);
 			ret = AM_FinishCiaInstall(handle);
 			amExit();
-			if (ret < 0) return ret;
+			if (ret < 0) {
+				EnableSleep();
+				return ret;
+			}
 			*restartNeeded = true;
 		}
 		remove(FINAL_CIA_PATH);
@@ -705,10 +738,16 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	if (brewFile) {
 		fclose(brewFile);
 		FILE* endBrewFile = fopen_mkdir(FINAL_3DSX_PATH, "w"); // Generate path
-		if (!endBrewFile) return 6;
+		if (!endBrewFile) {
+			EnableSleep();
+			return 6;
+		}
 		fclose(endBrewFile);
 		remove(FINAL_3DSX_PATH);
-		if(copy_file(TOINSTALL_3DSX_PATH, TEMPORAL_3DSX_PATH)) return 7;
+		if (copy_file(TOINSTALL_3DSX_PATH, TEMPORAL_3DSX_PATH)) {
+			EnableSleep();
+			return 7;
+		}
 		rename(TOINSTALL_3DSX_PATH, FINAL_3DSX_PATH);
 		*restartNeeded = true;
 	}
@@ -716,5 +755,6 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	fwrite(versionList[index - 1], 1, strlen(versionList[index - 1]), file);
 	fclose(file);
 	progbar->isHidden = true;
+	EnableSleep();
 	return 0;
 }

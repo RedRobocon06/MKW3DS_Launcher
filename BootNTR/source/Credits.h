@@ -1,24 +1,11 @@
-#ifndef CREDITS_H
-#define CREDITS_H
+#pragma once
 
-static const int    creditsCount = 15;
-static const char * credits[] =
-{
-    "AstronautLevel",
-    "AuroraWright",
-    "b1l1s",
-    "Cell9",
-    "d3m3vilurr",
-    "enler",
-    "fincs",
-    "Flat",
-    "FONZD",
-    "lucaboy",
-    "Nanquitas",
-    "PabloMK7",
-    "Steveice10",
-    "TuxSH",
-    "xerpi"
-};
+typedef struct credits_entry_s {
+	char* name;
+	char* whatHeDo;
+} credits_entry_t;
 
-#endif
+typedef struct credits_s {
+	credits_entry_t** entries;
+	int count;
+} credits_t;

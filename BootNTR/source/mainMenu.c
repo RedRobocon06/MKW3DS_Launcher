@@ -2,7 +2,6 @@
 #include "draw.h"
 #include "button.h"
 #include <time.h>
-#include "plgLoader.h"
 #include "clock.h"
 #include "sound.h"
 #include "drawableObject.h"
@@ -31,6 +30,8 @@ extern FS_MediaType launchAppMedtype;
 
 cwav_t                  *sfx_sound = NULL;
 cwav_t					*lag_sound = NULL;
+cwav_t					*cred_sound = NULL;
+
 
 
 static u32 getNextRbwColor(u32 counter) {
@@ -92,7 +93,7 @@ void    initMainMenu(void)
 
     newSpriteFromPNG(&pressExitSprite, "romfs:/sprites/textSprites/pressBExit.png");
 
-    setSpritePos(pressExitSprite, 180.0f, 217.0f);
+    setSpritePos(pressExitSprite, 0, 217.0f);
 
     changeBottomFooter(pressExitSprite); 
 
@@ -111,6 +112,7 @@ void    exitMainMenu(void)
 	clearUpdateSprites();
 	freeCwav(sfx_sound);
 	freeCwav(lag_sound);
+	freeCreditsResources();
 }
 
 int     mainMenu(void)
@@ -127,7 +129,7 @@ int     mainMenu(void)
 	u64 timer2 = Timer_Restart();
 	V32Button->isSelected = true;
 	bool neeedToUpdate = forceUpdate;
-    while (userTouch == false)
+    while (userTouch == false && aptMainLoop())
     {
 		if (Timer_HasTimePassed(17, timer)) {
 			timer = Timer_Restart();
@@ -151,15 +153,12 @@ int     mainMenu(void)
 				V33Button->isSelected = !V33Button->isSelected;
 			}
 		}
-		if (keys & KEY_Y) {
-			STARTLAG();
-		}
-		if (keys & KEY_X) {
-			STOPLAG();
-		}
 		if (exitkey & KEY_B) {
 			userTouch = true;
 			PLAYBOOP();
+		}
+		else if (exitkey & KEY_Y) {
+			selectVersion(3);
 		}
 		updateUI();
 		keys = hidKeysDown() | hidKeysHeld();
@@ -194,6 +193,16 @@ int     mainMenu(void)
 				V32Button->isGreyedOut = false;
 				if (restartneeded) userTouch = true;
 				break;
+			case 3:
+				greyBottomScreen(true);
+				V32Button->isGreyedOut = true;
+				V33Button->isGreyedOut = true;
+				pressExitSprite->isHidden = true;
+				creditsMenu();
+				pressExitSprite->isHidden = false;
+				greyBottomScreen(false);
+				V32Button->isGreyedOut = false;
+				V33Button->isGreyedOut = false;
 			default:
 				break;
 			}

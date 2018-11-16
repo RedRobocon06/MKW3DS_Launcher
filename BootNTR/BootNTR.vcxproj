@@ -81,7 +81,7 @@
     <NMakeCleanCommandLine>make clean</NMakeCleanCommandLine>
     <NMakeForcedIncludes>C:\devkitPro\libctru\include;$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <IncludePath>C:\devkitPro\portlibs\3ds\include;C:\devkitPro\libctru\include;$(IncludePath)</IncludePath>
-    <NMakeIncludeSearchPath>C:\devkitPro\libctru\include;</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>D:\Documentos\3dshack\CTGP-7_manager\CTGP-7_Launcher\BootNTR\source;C:\devkitPro\libctru\include</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -154,17 +154,16 @@
     <ClInclude Include="source\drawableObject.h" />
     <ClInclude Include="source\graphics.h" />
     <ClInclude Include="source\clock.h" />
+    <ClInclude Include="source\plgldr.h" />
     <ClInclude Include="source\sound.h" />
     <ClInclude Include="source\json\json.h" />
     <ClInclude Include="source\main.h" />
     <ClInclude Include="source\mysvcs.h" />
     <ClInclude Include="source\ntr_config.h" />
-    <ClInclude Include="source\plgLoader.h" />
-    <ClInclude Include="source\plgLoader_pm_N3DS.h" />
-    <ClInclude Include="source\plgLoader_pm_O3DS.h" />
     <ClInclude Include="source\Unicode.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\Descargas\plgldr.c" />
     <ClCompile Include="lib\ctrcommon\source\ctrcommon\app.cpp" />
     <ClCompile Include="lib\ctrcommon\source\ctrcommon\fs.cpp" />
     <ClCompile Include="lib\ctrcommon\source\ctrcommon\gpu.cpp" />
@@ -182,6 +181,7 @@
     <ClCompile Include="source\Archives.c" />
     <ClCompile Include="source\button.c" />
     <ClCompile Include="source\common_functions.c" />
+    <ClCompile Include="source\credits.c" />
     <ClCompile Include="source\draw.c" />
     <ClCompile Include="source\drawableObject.c" />
     <ClCompile Include="source\files.c" />
@@ -190,7 +190,7 @@
     <ClCompile Include="source\launcher.c" />
     <ClCompile Include="source\main.c" />
     <ClCompile Include="source\mainMenu.c" />
-    <ClCompile Include="source\plgLoader.c" />
+    <ClCompile Include="source\plgldr.c" />
     <ClCompile Include="source\png.c" />
     <ClCompile Include="source\clock.c" />
     <ClCompile Include="source\sound.c" />

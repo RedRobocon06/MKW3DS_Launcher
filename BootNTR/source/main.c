@@ -25,6 +25,44 @@ extern sprite_t* topInfoSpriteUpd;
 
 extern cwav_t* sfx_sound;
 extern cwav_t* lag_sound;
+extern cwav_t* cred_sound;
+
+aptHookCookie aptCookie;
+
+static void mainAptHook(APT_HookType hook, void* param) {
+	static bool bSleeping = false;
+	switch (hook)
+	{
+	case APTHOOK_ONRESTORE:
+	case APTHOOK_ONWAKEUP:
+		bSleeping = false;
+		break;
+	case APTHOOK_ONSUSPEND:
+	case APTHOOK_ONSLEEP:
+		if (!bSleeping) {
+			if (lag_sound) STOPLAG();
+			if (cred_sound) STOPCRED();
+		}
+		bSleeping = true;
+		break;
+
+	case APTHOOK_ONEXIT:
+		acExit();
+		amExit();
+		csndExit();
+		httpcExit();
+		romfsExit();
+		gfxExit();
+		aptExit();
+		APT_CloseApplication(NULL, 0, 0);
+		svcExitProcess();
+		break;
+
+	default:
+		break;
+	}
+}
+
 
 void getModVersion() {
 	memset(g_modversion, 0, 15);
@@ -86,7 +124,7 @@ bool isExpectedVersion() {
 	return true;
 }
 
-int main(void)
+int mainLauncher(void)
 {
     //u32         kernelVersion;
 
@@ -96,6 +134,7 @@ int main(void)
 	acInit();
 	csndInit();
 	drawInit();
+	aptHook(&aptCookie, mainAptHook, NULL);
 
 	getModVersion();
 	bool isProperVer = false;
@@ -103,82 +142,18 @@ int main(void)
 		isProperVer = isExpectedVersion();
     initUI();
 	InitUpdatesUI();
+	initCreditsResources();
 	if (!isProperVer) {
 		if (!g_modversion[0]) {
 			changeTopSprite(2);
-			FILE* zipFile = NULL;
-			u64 zipSize = 0;
-			zipFile = fopen("/CTGP-7.zip", "rb");
-			if (zipFile) {
-				fseek(zipFile, 0, SEEK_END);
-				zipSize = ftell(zipFile);
-				fclose(zipFile);
-			}
 			clearTop(false);
-			newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "CTGP-7 installer");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo CTGP-7 files detected. Would you");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install from CTGP-7.zip?\n");
-			if (zipFile) {
-				newAppTop(COLOR_GREEN, MEDIUM | CENTER, "File found!\n");
-				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
-			}
-			else {
-				newAppTop(COLOR_RED, MEDIUM | CENTER, "File not found in the SD root.");
-				newAppTop(COLOR_RED, MEDIUM | CENTER, "(This file can be found");
-				newAppTop(COLOR_RED, MEDIUM | CENTER, "searching in google.)\n");
-				newAppTop(COLOR_GREY, MEDIUM | CENTER, FONT_A": Install");
-			}
+			newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Fatal error");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo CTGP-7 files detected. Use the");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 installer to fix the files.");
 			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
 			u32 keys = 0;
 			bool installLoop = true;
-			while (installLoop) {
-				if ((keys & KEY_A) && zipFile) {
-					PLAYBEEP();
-					u64 ret = installMod(updateProgBar, zipSize);
-					u32 retlow = (u32)ret;
-					u32 rethigh = (u32)(ret >> 32);
-					clearTop(false);
-					if (!retlow) {
-						newAppTop(COLOR_GREEN, BOLD | MEDIUM | CENTER, "Installation successful!");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\n"FONT_B": Exit");
-					}
-					else if (retlow == 2) {
-						newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNot enough free space, %dMB", rethigh);
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "are needed to install the mod.");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "If you can't free more space");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "install the mod manually.\n");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
-					}
-					else if (retlow == 13) {
-						newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Installer and zip version");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "mismatch, make sure you have");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "both the latest zip and installer.\n");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
-					}
-					else {
-						newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nError occured during");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "installation, error code:\n");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "%08X %08X\n", retlow, rethigh);
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "You can ask for help in the");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server.\n");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
-					}
-					u32 keys2 = 0;
-					bool installLoop2 = true;
-					while (installLoop2)
-					{
-						if (keys2 & KEY_B) {
-							PLAYBOOP();
-							installLoop2 = false;
-						}
-						updateUI();
-						keys2 = hidKeysDown();
-					}
-					installLoop = false;
-				}
+			while (installLoop && aptMainLoop()) {
 				if (keys & KEY_B) {
 					PLAYBOOP();
 					installLoop = false;
@@ -210,7 +185,7 @@ int main(void)
 			}
 			u32 keys = 0;
 			bool errorLoop = true;
-			while (errorLoop) {
+			while (errorLoop && aptMainLoop()) {
 				if (keys & KEY_B) {
 					errorLoop = false;
 					PLAYBOOP();
@@ -237,6 +212,8 @@ int main(void)
 	exitMainMenu();
 	exitUI();
 	drawExit();
+	aptUnhook(&aptCookie);
+
     acExit();
     amExit();
 	csndExit();
@@ -250,4 +227,180 @@ int main(void)
 		for (;;);
 	}
     return (0);
+}
+
+int mainInstaller(void)
+{
+	//u32         kernelVersion;
+
+	gfxInitDefault();
+	romfsInit();
+	ptmSysmInit();
+	acInit();
+	csndInit();
+	drawInit();
+	aptHook(&aptCookie, mainAptHook, NULL);
+
+	getModVersion();
+	initUI();
+	InitUpdatesUI();
+	initCreditsResources();
+	changeTopSprite(2);
+	FILE* zipFile = NULL;
+	u64 zipSize = 0;
+	zipFile = fopen("/CTGP-7.zip", "rb");
+	if (zipFile) {
+		fseek(zipFile, 0, SEEK_END);
+		zipSize = ftell(zipFile);
+		fclose(zipFile);
+	}
+	clearTop(false);
+	newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "CTGP-7 installer");
+	if (!g_modversion[0]) {
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo CTGP-7 files detected. Would you");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install from CTGP-7.zip?\n");
+	}
+	else {
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nCTGP-7 files detected. Would you");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to reinstall from CTGP-7.zip?\n");
+	}
+	if (zipFile) {
+		newAppTop(COLOR_GREEN, MEDIUM | CENTER, "File found!\n");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
+	}
+	else {
+		newAppTop(COLOR_RED, MEDIUM | CENTER, "File not found in the SD root.");
+		newAppTop(COLOR_RED, MEDIUM | CENTER, "(This file can be found");
+		newAppTop(COLOR_RED, MEDIUM | CENTER, "searching in google.)\n");
+		newAppTop(COLOR_GREY, MEDIUM | CENTER, FONT_A": Install");
+	}
+	newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+	u32 keys = 0;
+	bool installLoop = true;
+	while (installLoop && aptMainLoop()) {
+		if ((keys & KEY_A) && zipFile) {
+			g_modversion[0] = '\0';
+			PLAYBEEP();
+			u64 ret = installMod(updateProgBar, zipSize);
+			u32 retlow = (u32)ret;
+			u32 rethigh = (u32)(ret >> 32);
+			clearTop(false);
+			if (!retlow) {
+				newAppTop(COLOR_GREEN, BOLD | MEDIUM | CENTER, "Installation successful!");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\n"FONT_B": Exit");
+			}
+			else if (retlow == 2) {
+				newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNot enough free space, %dMB", rethigh);
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "are needed to install the mod.");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "If you can't free more space");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "install the mod manually.\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+			}
+			else if (retlow == 13) {
+				newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Installer and zip version");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "mismatch, make sure you have");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "both the latest zip and installer.\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+			} else if (retlow == 14) {
+				newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Zip file is invalid.\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Make sure you didn't repack");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "the file manually (MAC).\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+			}
+			else if (retlow == 15) {
+				newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Failed to create a backup");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "of the CTGP-7 save file.\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\"SD:/CTGP-7savebak/\"");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "already exists.\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+			}
+			else {
+				newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nError occured during");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "installation, error code:\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "%08X %08X\n", retlow, rethigh);
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "You can ask for help in the");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server.\n");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+			}
+			u32 keys2 = 0;
+			bool installLoop2 = true;
+			while (installLoop2 && aptMainLoop())
+			{
+				if (keys2 & KEY_B) {
+					PLAYBOOP();
+					installLoop2 = false;
+				}
+				updateUI();
+				keys2 = hidKeysDown();
+			}
+			installLoop = false;
+		}
+		if (keys & KEY_B) {
+			PLAYBOOP();
+			installLoop = false;
+		}
+		updateUI();
+		keys = hidKeysDown();
+	}
+	if (g_modversion[0]) {
+		changeTopFooter(updaterControlsText);
+		updaterControlsText->isHidden = false;
+		setControlsMode(2);
+		clearTop(false);
+		newAppTop(COLOR_ORANGE, MEDIUM | BOLD | CENTER, "WARNING");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Did you install the CTGP-7");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "installer by accident?\n");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "To run the normal version:");
+		if (!envIsHomebrew()) {
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "- Install the following cia");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"FINAL_CIA_PATH);
+		}
+		else {
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "- Copy this file");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"TEMPORAL_3DSX_PATH);
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "to this location");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "SD:"FINAL_3DSX_PATH);
+		}
+		u32 keys = 0;
+		bool warningloop = true;
+		while (warningloop && aptMainLoop())
+		{
+			if (keys & KEY_B) {
+				warningloop = false;
+				PLAYBOOP();
+			}
+			updateUI();
+			keys = hidKeysDown();
+		}
+	}
+	greyExit();
+	updateUI();
+	svcSleepThread(500000000);
+
+	drawEndFrame();
+	exitMainMenu();
+	exitUI();
+	drawExit();
+	aptUnhook(&aptCookie);
+	acExit();
+	amExit();
+	csndExit();
+	httpcExit();
+	romfsExit();
+	gfxExit();
+	ptmSysmExit();
+	return (0);
+}
+
+int main(void) {
+#if LAUNCHER_MODE == 0
+	return mainInstaller();
+#else
+	return mainLauncher();
+#endif // LAUNCHER
 }

@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <3ds.h>
+#include "3ds.h"
 #include "graphics.h"
 #include "drawableObject.h"
 #include "mysvcs.h"
@@ -57,31 +57,9 @@ typedef uint8_t   u8;
 #define TEMPORAL_3DSX_PATH "/CTGP-7/cia/CTGP-7.3dsx"
 #define FINAL_3DSX_PATH "/3ds/CTGP-7/CTGP-7.3dsx"
 #define LAUNCH_OPT_SAVE "/CTGP-7/config/launchopt.bin"
+#define PLGLDR_TMP "/CTGP-7/tempboot.firm"
+#define PLGLDR_URL "https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/luma/boot.firm"
 #define CTGP7_TID (0x0004000003070C00ULL)
-
-static const char * const s_error[] =
-{
-    "READREMOTEMEMORY_TIMEOUT",
-    "OPENPROCESS_FAILURE",
-    "PROTECTMEMORY_FAILURE",
-    "REMOTECOPY_FAILURE",
-    "CFGU_INIT_FAILURE",
-    "CFGU_SECURE_FAILURE",
-    "WRONGREGION",
-    "SMPATCH_FAILURE",
-    "FSPATCH_FAILURE",
-    "FILEOPEN_FAILURE",
-    "NULL SIZE",
-    "LINEARMEMALIGN_FAILURE",
-    "ACCESSPATCH_FAILURE",
-    "UNKNOWN_FIRM",
-    "UNKNOWN_HOMEMENU",
-    "USER_ABORT",
-    "FILE_COPY_ERROR",
-    "LOAD_AND_EXECUTE",
-    "NTR is already running"
-
-};
 
 typedef struct  updateData_s
 {
@@ -194,7 +172,8 @@ Result  bnInitParamsByHomeMenu(void);
 
 bool    updateAvailable(void);
 bool	downloadChangelog(void);
-int		downloadFile(char* URL, char* filepath, progressbar_t* progbar, int mode);
+int		downloadFile(char* URL, char* filepath, progressbar_t* progbar);
+int		updateLuma3DS(progressbar_t* progbar);
 int     downloadString(char* URL, char** out);
 char*	getProgText(float prog, int index);
 int		performUpdate(progressbar_t* progbar, bool* restartNeeded);
@@ -217,4 +196,10 @@ void launchMod();
 ** installer.c
 */
 u64 installMod(progressbar_t* progbar, u64 zipSize);
+/*
+**credits.c
+*/
+void creditsMenu();
+void initCreditsResources();
+void freeCreditsResources();
 #endif

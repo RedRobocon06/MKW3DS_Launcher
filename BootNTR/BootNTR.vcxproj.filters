@@ -95,15 +95,6 @@
     <ClInclude Include="source\json\json.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="source\plgLoader.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="source\plgLoader_pm_N3DS.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="source\plgLoader_pm_O3DS.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="source\csvc.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -120,6 +111,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="source\Archives.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="source\plgldr.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -196,9 +190,6 @@
     <ClCompile Include="source\json\json.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="source\plgLoader.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="source\clock.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -218,6 +209,15 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="source\installer.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\Descargas\plgldr.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\plgldr.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\credits.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

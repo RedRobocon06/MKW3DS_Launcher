@@ -110,7 +110,7 @@ void UpdaterMenuLoop() {
 		if (!downloadChangelog()) {
 			newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Couldn't get update info.");
 			setControlsMode(2);
-			while (updaterLoop) {
+			while (updaterLoop && aptMainLoop()) {
 				keys = hidKeysDown();
 				if (keys & KEY_B) {
 					PLAYBOOP();
@@ -134,7 +134,7 @@ void UpdaterMenuLoop() {
 	if (forceUpdate) {
 		setControlsMode(0);
 	}
-	while (updaterLoop) {
+	while (updaterLoop && aptMainLoop()) {
 		allowcontrol = false;
 		drawUpdateText(ver, page, totPage);
 		if (Timer_HasTimePassed(250, timer)) {
@@ -179,7 +179,7 @@ void UpdaterMenuLoop() {
 				bool errorLoop = true;
 				int keysErr = 0;
 				setControlsMode(2);
-				while (errorLoop) {
+				while (errorLoop && aptMainLoop()) {
 					keysErr = hidKeysDown();
 					if (keysErr & KEY_B) {
 						errorLoop = false;
@@ -215,6 +215,7 @@ void UpdaterMenuLoop() {
 }
 
 void UpdatesMenu() {
+
 	changeTopFooter(updaterControlsText);
 	changeTopSprite(1);
 	UpdaterMenuLoop();

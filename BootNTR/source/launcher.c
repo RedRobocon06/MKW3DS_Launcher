@@ -2,11 +2,12 @@
 #include "draw.h"
 #include "button.h"
 #include <time.h>
-#include "plgLoader.h"
+#include "plgldr.h"
 #include "clock.h"
 #include "drawableObject.h"
 #include "Unicode.h"
 #include "sound.h"
+
 
 static u64 MK7tids[] = { 0x0004000000030600ULL, 0x0004000000030700ULL, 0x0004000000030800ULL };
 static const u64 updtid = 0x0000000E00000000ULL;
@@ -29,6 +30,22 @@ typedef struct MK7GameInfo_s
 	TitleWithUpd_t cartridge;
 } MK7GameInfo_t;
 
+enum GameRegion {
+	JAPAN = 3,
+	EUROPE = 1,
+	AMERICA = 2
+};
+
+enum GameRevision {
+	REV0_11 = 1,
+	REV1 = 2
+};
+
+typedef struct LaunchSettings_s {
+	u32 region;
+	u32 revision;
+} LaunchSettings_t;
+
 typedef struct SaveOpts_s
 {
 	u8 alwaysFE;
@@ -46,6 +63,130 @@ extern sprite_t *launchControlsSprite;
 extern drawableScreen_t* botScreen;
 extern drawableScreen_t *topScreen;
 
+void launchPluginLoader(TitleWithUpd_t* tinfo) {
+	u32 ret = 0;
+	PluginLoadParameters plgparam;
+	plgparam.noFlash = true;
+	plgparam.lowTitleId = (u32)tinfo->game.titleID;
+	strcpy(plgparam.path, "/CTGP-7/resources/CTGP-7.3gx");
+	//
+	LaunchSettings_t* launchSettings = (LaunchSettings_t*)&(plgparam.config[0]);
+	switch ((u32)tinfo->game.titleID)
+	{
+	case 0x00030600:
+		launchSettings->region = JAPAN;
+		break;
+	case 0x00030700:
+		launchSettings->region = EUROPE;
+		break;
+	case 0x00030800:
+		launchSettings->region = AMERICA;
+		break;
+	default:
+		launchSettings->region = 0;
+		break;
+	}
+	switch ((u32)fmax(tinfo->game.version, tinfo->update.version))
+	{
+	case 1040:
+		launchSettings->revision = REV0_11;
+		break;
+	case 2112:
+	case 2048:
+		launchSettings->revision = REV1;
+		break;
+	default:
+		launchSettings->revision = 0;
+		break;
+	}
+	plgparam.config[7] = 0x77777777;
+	//
+	ret = plgLdrInit();
+	if (ret) customBreak(0x00F, ret, 0, 0);
+	ret = PLGLDR__SetPluginLoaderState(true);
+	if (ret) customBreak(0x00F, ret, 1, 0);
+	ret = PLGLDR__SetPluginLoadParameters(&plgparam);
+	if (ret) customBreak(0x00F, ret, 2, 0);
+	plgLdrExit();
+}
+
+bool checkPlgLdr() {
+	int ret = plgLdrInit();
+	bool retval = true;
+	if (ret != 0) {
+		launchControlsSprite->isHidden = true;
+		bool updatelumaloop = true;
+		u32 keys = 0;
+		clearTop(false);
+		newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Cannot launch CTGP-7");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nLuma3DS with plugin loader");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "is not installed. Would you");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install it?\n");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+		while (updatelumaloop && aptMainLoop()) {
+			if (keys & KEY_B) {
+				updatelumaloop = false;
+				retval = false;
+				PLAYBOOP();
+			}
+			if (keys & KEY_A) {
+				PLAYBEEP();
+				int updret = updateLuma3DS(updateProgBar);
+				if (updret != 0) {
+					bool performupdatelumaloop = true;
+					int keys2 = 0;
+					clearTop(false);
+					newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Cannot launch CTGP-7");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nLuma3DS with plugin loader");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "failed to download. Please,");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "update manually.");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Error code: 0x%08X\n", updret);
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+					while (performupdatelumaloop && aptMainLoop()) {
+						if (keys2 & KEY_B) {
+							performupdatelumaloop = false;
+							updatelumaloop = false;
+							retval = false;
+							PLAYBOOP();
+						}
+						updateUI();
+						keys2 = hidKeysDown();
+					}
+				}
+				else {
+					clearTop(false);
+					newAppTop(COLOR_LIMEGREEN, BOLD | MEDIUM | CENTER, "Update succeded!");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nThe console will reboot.\n");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+					bool performupdatelumaloop = true;
+					int keys2 = 0;
+					while (performupdatelumaloop && aptMainLoop()) {
+						if (keys2 & KEY_B) {
+							PLAYBOOP();
+							clearTop(false);
+							changeTopSprite(0);
+							greyExit();
+							updateUI();
+							svc_sleepThread(2000000000);
+							svcKernelSetState(7);
+							for (;;);
+						}
+						updateUI();
+						keys2 = hidKeysDown();
+					}
+				}
+			}
+			updateUI();
+			keys = hidKeysDown();
+		}
+	}
+	else {
+		retval = true;
+	}
+	plgLdrExit();
+	return retval;
+}
 
 void setLaunchControlsMode(int mode) {
 	switch (mode) {
@@ -277,37 +418,21 @@ bool drawLaunchText(TitleWithUpd_t** opts, int curropt, bool gameCard, int total
 }
 
 void launchMod() {
-	s64 lumaver;
 	MK7GameInfo_t* gameList;
 	appTop->sprite = topInfoSpriteUpd;
 	changeTopFooter(launchControlsSprite);
-	setLaunchControlsMode(2);
-	if (osGetKernelVersion() < SYSTEM_VERSION(2, 54, 0) || R_FAILED(svcGetSystemInfo(&lumaver, 0x10000, 0)) || GET_VERSION_MAJOR((u32)lumaver) < 9) {
-		bool errorloop = true;
-		u32 keys = 0;
-		clearTop(false);
-		newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Failed to launch CTGP-7");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nSystem firmware or Luma CFW");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "versions are outdated.");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nFirmware 11.4 and Luma v9.0");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "or avobe are needed to play.");
-		while (errorloop) {
-			updateUI(); 
-			keys = hidKeysDown();
-			if (keys & KEY_B) {
-				PLAYBOOP();
-				errorloop = false;
-			}
-		}
+	if (!checkPlgLdr()) {
 		clearTop(false);
 		removeAppTop();
-		changeTopFooter(NULL);
+		changeTopFooter(NULL); 
+		appTop->sprite = topInfoSprite;
 		return;
 	}
+	setLaunchControlsMode(2);
+	launchControlsSprite->isHidden = false;
 	gameList = getAllPossibleGames();
 	u32 gameListCount = getNumberOfGames(gameList);
 	if (!gameListCount) {
-		freeGameList(gameList);
 		bool errorloop = true;
 		u32 keys = 0;
 		clearTop(false);
@@ -318,7 +443,7 @@ void launchMod() {
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "it shows up in the home menu.");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nOnly EUR / USA / JPN games");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "are supported.");
-		while (errorloop) {
+		while (errorloop && aptMainLoop()) {
 			updateUI();
 			keys = hidKeysDown();
 			if (keys & KEY_B) {
@@ -349,7 +474,7 @@ void launchMod() {
 		launchControlsSprite->isHidden = true;
 	}
 	setLaunchControlsMode(canLaunch ? 0 : 1);
-	while (launchLoop) {
+	while (launchLoop && aptMainLoop()) {
 		if (keys & KEY_RIGHT) {
 			autoLaunch = false;
 			updateProgBar->isHidden = true;
@@ -381,7 +506,7 @@ void launchMod() {
 			if (canLaunch) { 
 				PLAYBEEP();
 				saveOptToSave(opts, curropt, gameCard);
-				launchPluginLoader();
+				launchPluginLoader(opts[curropt]);
 				launchAppMedtype = (gameCard && curropt == 0) ? MEDIATYPE_GAME_CARD : MEDIATYPE_SD;
 				launchAppID = opts[curropt]->game.titleID;
 				launchLoop = false;

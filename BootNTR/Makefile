@@ -1,5 +1,6 @@
 # TARGET #
 
+
 TARGET := 3DS
 LIBRARY := 0
 
@@ -11,8 +12,14 @@ endif
 
 # COMMON CONFIGURATION #
 
-NAME := CTGP-7_Installer
 
+LAUNCHER_M = 1
+
+ifeq ($(LAUNCHER_M), 1)
+	NAME := CTGP-7
+else 
+	NAME := CTGP-7_Installer
+endif
 
 BUILD_DIR := build
 OUTPUT_DIR := output
@@ -24,17 +31,23 @@ EXTRA_OUTPUT_FILES :=
 LIBRARY_DIRS := $(PORTLIBS) $(CTRULIB)
 LIBRARIES := citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
 
-VERSION_MAJOR := 1
-VERSION_MINOR := 0
-VERSION_MICRO := 0
-
+ifeq ($(LAUNCHER_M), 1)
+	VERSION_MAJOR := 1
+	VERSION_MINOR := 2
+	VERSION_MICRO := 0
+else
+	VERSION_MAJOR := 1
+	VERSION_MINOR := 0
+	VERSION_MICRO := 1
+endif
 
 BUILD_FLAGS := -march=armv6k -mtune=mpcore -mfloat-abi=hard
 BUILD_FLAGS_CC := -g -Wall -Wno-strict-aliasing -O3 -mword-relocations \
 					-fomit-frame-pointer -ffast-math $(ARCH) $(INCLUDE) -DARM11 -D_3DS $(BUILD_FLAGS) \
 					-DAPP_VERSION_MAJOR=${VERSION_MAJOR} \
 					-DAPP_VERSION_MINOR=${VERSION_MINOR} \
-					-DAPP_VERSION_MICRO=${VERSION_MICRO}
+					-DAPP_VERSION_MICRO=${VERSION_MICRO} \
+					-DLAUNCHER_MODE=${LAUNCHER_M}
 
 BUILD_FLAGS_CXX := $(COMMON_FLAGS) -std=gnu++11
 RUN_FLAGS :=
@@ -47,7 +60,11 @@ RUN_FLAGS :=
 
 ifeq ($(TARGET),$(filter $(TARGET),3DS WIIU))
 	TITLE := CTGP-7
-    DESCRIPTION := Installer
+	ifeq ($(LAUNCHER_M), 1)
+		DESCRIPTION := Launcher & Updater
+	else 
+		DESCRIPTION := Installer
+	endif
     AUTHOR := dshack.org
 endif
 
@@ -88,7 +105,5 @@ include buildtools/make_base
 cleanupdater:
 	@rm -f $(BUILD_DIR)/3ds-arm/source/updater.d $(BUILD_DIR)/3ds-arm/source/updater.o
 
-re:
-	@rm -rf $(BUILD_DIR)
-	@echo cleaned build dir
-	make
+re : clean all
+.PHONY: re
