@@ -10,7 +10,6 @@ extern cwav_t* lag_sound;
 extern cwav_t* sfx_sound;
 
 #define EXPECTED_INSTALLER_VER "1"
-#define ZIP_DOWNLOAD_URL "http://ipv4.download.thinkbroadband.com/200MB.zip"
 
 progressbar_t* installProgBar;
 extern appInfoObject_t         *appTop;

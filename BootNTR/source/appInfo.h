@@ -50,7 +50,7 @@ void                deleteAppInfoObject(appInfoObject_t *object);
 void                appInfoSetTextBoundaries(appInfoObject_t *object, float posX, float posY);
 void                appInfoSetSpritePosition(appInfoObject_t *object, float posX, float posY);
 void                newAppInfoEntry(appInfoObject_t *object, u32 color, u32 flags, char *text, ...);
-void                removeAppInfoEntry(appInfoObject_t *object);
+void                removeAppInfoEntry(appInfoObject_t *object, bool update);
 void                clearAppInfo(appInfoObject_t *object, bool updateScreen);
 void                drawAppInfo(appInfoObject_t *object);
 void                appInfoDisableAutoUpdate(void);

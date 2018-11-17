@@ -423,7 +423,7 @@ void launchMod() {
 	changeTopFooter(launchControlsSprite);
 	if (!checkPlgLdr()) {
 		clearTop(false);
-		removeAppTop();
+		removeAppTop(false);
 		changeTopFooter(NULL); 
 		appTop->sprite = topInfoSprite;
 		return;
@@ -452,7 +452,7 @@ void launchMod() {
 			}
 		}
 		clearTop(false);
-		removeAppTop();
+		removeAppTop(false);
 		freeGameList(gameList);
 		changeTopFooter(NULL);
 		return;
@@ -535,7 +535,7 @@ void launchMod() {
 		}
 	}
 	clearTop(false);
-	removeAppTop();
+	removeAppTop(false);
 	free(opts);
 	freeGameList(gameList);
 	changeTopFooter(NULL);

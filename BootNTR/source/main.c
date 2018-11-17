@@ -205,7 +205,7 @@ int mainLauncher(void)
 		forceUpdate = updateAvailable();
 		initMainMenu();
 		clearTop(false);
-		removeAppTop();
+		removeAppTop(false);
 		mainMenu();
 	}
 	drawEndFrame();

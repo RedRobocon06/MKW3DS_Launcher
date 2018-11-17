@@ -24,7 +24,7 @@ extern cwav_t                  *lag_sound;
 
 void    InitUpdatesUI(void)
 {
-	removeAppTop();
+	removeAppTop(false);
 	
 	if (!changelogTextsprite)
 		newSpriteFromPNG(&changelogTextsprite, "romfs:/sprites/textSprites/changelogText.png");
@@ -67,7 +67,7 @@ void ExitUpdatesUI(void) {
 	changeTopFooter(NULL);
 	changeTopSprite(0);
 	clearTop(false);
-	removeAppTop();
+	removeAppTop(false);
 }
 
 void clearUpdateSprites() {
@@ -106,7 +106,7 @@ void UpdaterMenuLoop() {
 	if (versionList[0] == NULL) {
 		newAppTop(DEFAULT_COLOR, MEDIUM | BOLD | CENTER, "Getting Update Info...");
 		updateUI();
-		removeAppTop();
+		removeAppTop(false);
 		if (!downloadChangelog()) {
 			newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Couldn't get update info.");
 			setControlsMode(2);

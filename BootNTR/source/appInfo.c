@@ -148,10 +148,10 @@ exit:
 
 }
 
-void    removeAppInfoEntry(appInfoObject_t *object)
+void    removeAppInfoEntry(appInfoObject_t *object, bool update)
 {
     deleteLastEntry(object);
-    if (autoUpdate)
+    if (update)
         updateUI();
 }
 
