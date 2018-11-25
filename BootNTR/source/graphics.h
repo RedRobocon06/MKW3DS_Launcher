@@ -25,6 +25,7 @@ extern appInfoObject_t  *appTop;
 extern appInfoObject_t  *appBottom;
 
 #define newAppTop(...) newAppInfoEntry(appTop, __VA_ARGS__)
+#define newAppTopMultiline(color, flags, text) drawMultilineText(color, flags, text)
 #define removeAppTop(update) removeAppInfoEntry(appTop, update)
 #define clearTop(update)    clearAppInfo(appTop, update)
 

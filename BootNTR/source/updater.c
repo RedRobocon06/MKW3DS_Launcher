@@ -8,7 +8,6 @@
 #include "button.h"
 #include "clock.h"
 #include <malloc.h>
-#include <curl/curl.h>
 #include "Unicode.h"
 #include "sound.h"
 
@@ -23,6 +22,7 @@ static char *str_result_buf = NULL;
 static size_t str_result_sz = 0;
 static size_t str_result_written = 0;
 
+char CURL_lastErrorCode[CURL_ERROR_SIZE];
 static char *file_result_buf = NULL;
 static size_t file_result_sz = 0;
 static size_t file_result_written = 0;
@@ -229,20 +229,23 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 
 	int retcode = 0;
 	
-	char cerr[CURL_ERROR_SIZE];
+	
 	void *socubuf = memalign(0x1000, 0x100000);
 	if (!socubuf) {
+		sprintf(CURL_lastErrorCode, "Failed to allocate memory.");
 		retcode = 1;
 		goto exit;
 	}
 	
-	if (R_FAILED(socInit(socubuf, 0x100000))) {
-		retcode = 2;
+	int res = socInit(socubuf, 0x100000);
+	if (R_FAILED(res)) {
+		sprintf(CURL_lastErrorCode, "socInit returned: 0x%08X", res);
 		goto exit;
 	}
 	
 	downfile = fopen_mkdir(filepath, "wb");
 	if (!downfile || !progbar) {
+		sprintf(CURL_lastErrorCode, "Failed to create file.");
 		retcode = 4;
 		goto exit;
 	}
@@ -268,12 +271,12 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	curl_easy_setopt(hnd, CURLOPT_XFERINFOFUNCTION, file_progress_callback);
 	curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, file_handle_data);
-	curl_easy_setopt(hnd, CURLOPT_ERRORBUFFER, cerr);
+	curl_easy_setopt(hnd, CURLOPT_ERRORBUFFER, CURL_lastErrorCode);
 	curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
 	curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
 	curl_easy_setopt(hnd, CURLOPT_STDERR, stdout);
 	
-	cerr[0] = 0;
+	CURL_lastErrorCode[0] = 0;
 	CURLcode cres = curl_easy_perform(hnd);
 	curl_easy_cleanup(hnd);
 	
@@ -308,16 +311,18 @@ int downloadString(char* URL, char** out) {
 
 	DisableSleep();
 
+	*out = NULL;
 	int retcode = 0;
 
-	char cerr[CURL_ERROR_SIZE];
 	void *socubuf = memalign(0x1000, 0x100000);
 	if (!socubuf) {
+		sprintf(CURL_lastErrorCode, "Failed to allocate memory.");
 		retcode = 1;
 		goto exit;
 	}
-
-	if (R_FAILED(socInit(socubuf, 0x100000))) {
+	int res = socInit(socubuf, 0x100000);
+	if (R_FAILED(res)) {
+		sprintf(CURL_lastErrorCode, "socInit returned: 0x%08X", res);
 		retcode = 2;
 		goto exit;
 	}
@@ -333,12 +338,12 @@ int downloadString(char* URL, char** out) {
 	curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
 	curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, handle_data);
-	curl_easy_setopt(hnd, CURLOPT_ERRORBUFFER, cerr);
+	curl_easy_setopt(hnd, CURLOPT_ERRORBUFFER, CURL_lastErrorCode);
 	curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
 	curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
 	curl_easy_setopt(hnd, CURLOPT_STDERR, stdout);
 
-	cerr[0] = 0;
+	CURL_lastErrorCode[0] = 0;
 	CURLcode cres = curl_easy_perform(hnd);
 	curl_easy_cleanup(hnd);
 
@@ -619,9 +624,9 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 				clearTop(false);
 				PLAYBOOP();
 				newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Download Failed");
-				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nError downloading file %d", fileDownCnt);
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Error downloading file %d", fileDownCnt);
 				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Err: 0x%08X", 5 | (ret << 8));
-				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nDo you want to retry?");
+				newAppTopMultiline(DEFAULT_COLOR, SMALL | CENTER, CURL_lastErrorCode);
 				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, ""FONT_A": Retry       "FONT_B": Exit");
 				while (errorloop) {
 					if (keys & KEY_A) {

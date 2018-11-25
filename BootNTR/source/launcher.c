@@ -121,9 +121,9 @@ bool checkPlgLdr() {
 		newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Cannot launch CTGP-7");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nLuma3DS with plugin loader");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "is not installed. Would you");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install it?\n");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install it? Info:"); 
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "pastebin.com/7s5Q3fc4");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install  "FONT_B": Exit");
 		while (updatelumaloop && aptMainLoop()) {
 			if (keys & KEY_B) {
 				updatelumaloop = false;

@@ -13,6 +13,7 @@
 #include "drawableObject.h"
 #include "mysvcs.h"
 #include "csvc.h"
+#include "curl/curl.h"
 
 
 #define check_prim(result, err) if ((result) != 0) {g_primary_error = err; \
@@ -170,6 +171,7 @@ Result  bnInitParamsByHomeMenu(void);
 ** updater.c
 */
 
+extern char	CURL_lastErrorCode[CURL_ERROR_SIZE];
 bool    updateAvailable(void);
 bool	downloadChangelog(void);
 int		downloadFile(char* URL, char* filepath, progressbar_t* progbar);

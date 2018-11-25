@@ -52,6 +52,7 @@ void                appInfoSetSpritePosition(appInfoObject_t *object, float posX
 void                newAppInfoEntry(appInfoObject_t *object, u32 color, u32 flags, char *text, ...);
 void                removeAppInfoEntry(appInfoObject_t *object, bool update);
 void                clearAppInfo(appInfoObject_t *object, bool updateScreen);
+void				drawMultilineText(u32 color, u32 flags, char* txt);
 void                drawAppInfo(appInfoObject_t *object);
 void                appInfoDisableAutoUpdate(void);
 void                appInfoEnableAutoUpdate(void);

@@ -13,7 +13,7 @@ endif
 # COMMON CONFIGURATION #
 
 
-LAUNCHER_M = 1
+LAUNCHER_M = 0
 
 ifeq ($(LAUNCHER_M), 1)
 	NAME := CTGP-7
@@ -34,7 +34,7 @@ LIBRARIES := citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
 ifeq ($(LAUNCHER_M), 1)
 	VERSION_MAJOR := 1
 	VERSION_MINOR := 2
-	VERSION_MICRO := 1
+	VERSION_MICRO := 2
 else
 	VERSION_MAJOR := 1
 	VERSION_MINOR := 0

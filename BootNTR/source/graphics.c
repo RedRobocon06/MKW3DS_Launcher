@@ -53,8 +53,8 @@ void    initUI(void)
 
     setSpritePos(topInfoSprite, 50, 20);
 	setSpritePos(topInfoSpriteUpd, 50, 20);
-    appTop = newAppInfoObject(topInfoSprite, 14, 62.0f, 30.0f);
-    appInfoSetTextBoundaries(appTop, 338.0f, 210.0f);
+    appTop = newAppInfoObject(topInfoSprite, 14, 58.0f, 30.0f);
+    appInfoSetTextBoundaries(appTop, 343.0f, 220.0f);
 
 	newCwav("romfs:/sound/beepboopclick.bcwav", &sfx_sound);
 	newCwav("romfs:/sound/lag.bcwav", &lag_sound);

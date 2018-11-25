@@ -109,6 +109,8 @@ void UpdaterMenuLoop() {
 		removeAppTop(false);
 		if (!downloadChangelog()) {
 			newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Couldn't get update info.");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Error info:");
+			newAppTopMultiline(DEFAULT_COLOR, SMALL | CENTER, CURL_lastErrorCode);
 			setControlsMode(2);
 			while (updaterLoop && aptMainLoop()) {
 				keys = hidKeysDown();
@@ -186,7 +188,14 @@ void UpdaterMenuLoop() {
 						PLAYBOOP();
 					}
 					clearTop(false);
-					if (ret) {
+					if ((ret & 0xFF) == 0x3) {
+						newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Update Failed");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Couldn't get version info.");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "0x%08X", ret);
+						newAppTopMultiline(DEFAULT_COLOR, SMALL | CENTER, CURL_lastErrorCode);
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nYou can ask for help in the");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server.");
+					} else if (ret) {
 						newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Update Failed");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nThe update failed with");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "the following error code:");

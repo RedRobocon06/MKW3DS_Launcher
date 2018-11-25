@@ -161,6 +161,8 @@ void creditsLoop() {
 	if (totentries == 0) {
 		clearTop(false);
 		newAppTop(COLOR_ORANGE, MEDIUM | BOLD | CENTER, "Couldn't download credits.");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Error info:");
+		newAppTopMultiline(DEFAULT_COLOR, SMALL | CENTER, CURL_lastErrorCode);
 		while (creditsloop && aptMainLoop())
 		{
 			if (key & KEY_B) {
