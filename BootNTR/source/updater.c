@@ -505,6 +505,15 @@ int updateLuma3DS(progressbar_t* progbar) {
 	return retcode;
 }
 
+void fileNameTrim(char* filename) {
+	int size = strlen(filename);
+	for (int i = size - 1; i >= 0; i--) {
+		char c = filename[i];
+		if (c == '\n' || c == '\r' || c == ' ') filename[i] = '\0';
+		else break;
+	}
+}
+
 int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	DisableSleep();
 	int index = -1;
@@ -582,6 +591,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	STOPLAG();
 	for (int i = 0; downfileinfo[i]; i++) { 
 		downFileInfo_t* src = downfileinfo[i];
+		fileNameTrim(src->fileName);
 		if (!(src->mode == 'M')) continue;
 		for (int j = 0; downfileinfo[j]; j++) { 
 			downFileInfo_t* dst = downfileinfo[j];

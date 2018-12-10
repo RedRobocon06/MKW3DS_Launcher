@@ -56,7 +56,7 @@ static void resetC3Denv() {
 	C3D_TexEnv *env;
 	for (int i = 0; i < 4; i++) {
 		env = C3D_GetTexEnv(i);
-		TexEnv_Init(env);
+		C3D_TexEnvInit(env);
 	}
 }
 
@@ -70,14 +70,16 @@ static void bindImageGreyScale(C3D_Tex *texture, u32 texture_color) {
 	env = C3D_GetTexEnv(0);
 	C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_CONSTANT, 0);
 	C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, 0, 0);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvOpRgb(env, 0, 0, 0);
+	C3D_TexEnvOpAlpha(env, 0, 0, 0);
 	C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
 	C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
 	C3D_TexEnvColor(env, texture_color);
 	env = C3D_GetTexEnv(1);
 	C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_CONSTANT, 0);
 	C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, 0, 0);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvOpRgb(env, 0, 0, 0);
+	C3D_TexEnvOpAlpha(env, 0, 0, 0);
 	C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
 	C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
 	C3D_TexEnvColor(env, greyMask);
@@ -85,15 +87,15 @@ static void bindImageGreyScale(C3D_Tex *texture, u32 texture_color) {
 	env = C3D_GetTexEnv(2);
 	C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PREVIOUS, 0);
 	C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, 0, 0);
-	C3D_TexEnvOp(env, C3D_RGB, GPU_TEVOP_RGB_SRC_R, GPU_TEVOP_RGB_SRC_G, 0);
-	C3D_TexEnvOp(env, C3D_Alpha, 0, 0, 0);
+	C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_R, GPU_TEVOP_RGB_SRC_G, 0);
+	C3D_TexEnvOpAlpha(env, 0, 0, 0);
 	C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
 	C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
 	env = C3D_GetTexEnv(3);
 	C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PREVIOUS_BUFFER, 0);
 	C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, 0, 0);
-	C3D_TexEnvOp(env, C3D_RGB, 0, GPU_TEVOP_RGB_SRC_B, 0);
-	C3D_TexEnvOp(env, C3D_Alpha, 0, 0, 0);
+	C3D_TexEnvOpRgb(env, 0, GPU_TEVOP_RGB_SRC_B, 0);
+	C3D_TexEnvOpAlpha(env, 0, 0, 0);
 	C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
 	C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
 }
@@ -108,7 +110,8 @@ static void bindTexture(C3D_Tex *texture, u32 texture_color)
 	C3D_TexEnvBufUpdate(C3D_RGB, 0);
 	C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_CONSTANT, 0);
 	C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, 0, 0);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvOpRgb(env, 0, 0, 0);
+	C3D_TexEnvOpAlpha(env, 0, 0, 0);
 	C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
 	C3D_TexEnvFunc(env, C3D_Alpha, GPU_REPLACE);
 	C3D_TexEnvColor(env, texture_color);
@@ -197,7 +200,8 @@ void drawRectangle(rectangle_t *rectangle)
 	C3D_TexEnvBufUpdate(C3D_RGB, 0);
 	C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, 0, 0);
 	C3D_TexEnvSrc(env, C3D_Alpha, GPU_CONSTANT, 0, 0);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvOpRgb(env, 0, 0, 0);
+	C3D_TexEnvOpAlpha(env, 0, 0, 0);
 	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 	C3D_TexEnvColor(env, 0xFFFFFFFF);
 
@@ -311,13 +315,13 @@ void drawInit(void)
 
     // Initialize the top render target
     target = C3D_RenderTargetCreate(240, 400, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-    C3D_RenderTargetSetClear(target, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+	C3D_RenderTargetClear(target, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
     C3D_RenderTargetSetOutput(target, GFX_TOP, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
     top.target = target;
 
     // Initialize the bottom render target
     target = C3D_RenderTargetCreate(240, 320, GPU_RB_RGBA8, GPU_RB_DEPTH24_STENCIL8);
-    C3D_RenderTargetSetClear(target, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
+	C3D_RenderTargetClear(target, C3D_CLEAR_ALL, CLEAR_COLOR, 0);
     C3D_RenderTargetSetOutput(target, GFX_BOTTOM, GFX_LEFT, DISPLAY_TRANSFER_FLAGS);
     bottom.target = target;
 
@@ -351,7 +355,8 @@ void setTextColor(u32 color)
     env = C3D_GetTexEnv(0);
     C3D_TexEnvSrc(env, C3D_RGB, GPU_CONSTANT, 0, 0);
     C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_CONSTANT, 0);
-    C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
+	C3D_TexEnvOpRgb(env, 0, 0, 0);
+	C3D_TexEnvOpAlpha(env, 0, 0, 0);
     C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
     C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
     C3D_TexEnvColor(env, color);

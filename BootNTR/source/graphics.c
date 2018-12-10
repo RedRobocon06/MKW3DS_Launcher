@@ -58,8 +58,6 @@ void    initUI(void)
 
 	newCwav("romfs:/sound/beepboopclick.bcwav", &sfx_sound);
 	newCwav("romfs:/sound/lag.bcwav", &lag_sound);
-	
-    updateUI();
 }
 
 void changeTopSprite(int id) {
