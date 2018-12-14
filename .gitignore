@@ -251,4 +251,5 @@ ModelManifest.xml
 *.elf
 *.cia
 *.3dsx
+*.map
 output/
