@@ -105,7 +105,7 @@ void launchPluginLoader(TitleWithUpd_t* tinfo) {
 	//
 	ret = plgLdrInit();
 	if (ret) customBreak(0x00F, ret, 0, 0);
-	ret = PLGLDR__IsPluginLoaderEnabled(&isPlgEnabled);
+	ret = PLGLDR__IsPluginLoaderEnabled((bool*)&isPlgEnabled);
 	launchSettings->wasPlgEnabled = isPlgEnabled;
 	if (ret) customBreak(0x00F, ret, 1, 0);
 	ret = PLGLDR__SetPluginLoaderState(true);
