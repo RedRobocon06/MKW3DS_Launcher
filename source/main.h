@@ -97,6 +97,7 @@ s32     backdoorHandler();
 /*
 ** mainMenu.c
 */
+void	initMainMenuResources(void);
 void    initMainMenu(void);
 void    exitMainMenu(void);
 int     mainMenu(void);

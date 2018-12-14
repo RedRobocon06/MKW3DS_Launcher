@@ -16,6 +16,8 @@ extern sprite_t			*topInfoSpriteUpd;
 
 static button_t         *V32Button = NULL;
 static button_t         *V33Button = NULL;
+extern sprite_t         *launchTextSprite;
+extern sprite_t			*updateTextSprite;
 static sprite_t         *tinyButtonBGSprite = NULL;
 static sprite_t         *selTinyButtonBGSprite = NULL;
 sprite_t				*pressExitSprite = NULL;
@@ -71,27 +73,23 @@ void    selectVersion(u32 mode)
 	optionTodo = mode;
 }
 
+void initMainMenuResources(void) {
+	newSpriteFromPNG(&tinyButtonBGSprite, "romfs:/sprites/tinyButtonBackground.png");
+	newSpriteFromPNG(&selTinyButtonBGSprite, "romfs:/sprites/selTinyButtonBackground.png");
+	newSpriteFromPNG(&launchTextSprite, "romfs:/sprites/textSprites/launchText.png");
+	newSpriteFromPNG(&updateTextSprite, "romfs:/sprites/textSprites/updateText.png");
+	newSpriteFromPNG(&pressExitSprite, "romfs:/sprites/textSprites/pressBExit.png");
+}
+
 void    initMainMenu(void)
 {
-    
-    sprite_t *sprite;
-    
-    newSpriteFromPNG(&tinyButtonBGSprite, "romfs:/sprites/tinyButtonBackground.png");
-	newSpriteFromPNG(&selTinyButtonBGSprite, "romfs:/sprites/selTinyButtonBackground.png");
-
-
-    newSpriteFromPNG(&sprite, "romfs:/sprites/textSprites/launchText.png");
-    V32Button = newButton(5.0f, 48.0f, selectVersion, 1, tinyButtonBGSprite, sprite, selTinyButtonBGSprite, 0xFF0000FF);
-    newSpriteFromPNG(&sprite, "romfs:/sprites/textSprites/updateText.png");
-
-    V33Button = newButton(5.0f, 132.0f, selectVersion, 2, tinyButtonBGSprite, sprite, selTinyButtonBGSprite, 0xFF0000FF);
+    V32Button = newButton(5.0f, 48.0f, selectVersion, 1, tinyButtonBGSprite, launchTextSprite, selTinyButtonBGSprite, 0xFF0000FF);
+	V33Button = newButton(5.0f, 132.0f, selectVersion, 2, tinyButtonBGSprite, updateTextSprite, selTinyButtonBGSprite, 0xFF0000FF);
 
     V32Button->show(V32Button);
     V33Button->show(V33Button);
     addBottomObject(V32Button);
-    addBottomObject(V33Button);       
-
-    newSpriteFromPNG(&pressExitSprite, "romfs:/sprites/textSprites/pressBExit.png");
+    addBottomObject(V33Button);
 
     setSpritePos(pressExitSprite, 0, 217.0f);
 

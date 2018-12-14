@@ -8,6 +8,8 @@ sprite_t         *topSprite = NULL;
 
 sprite_t         *topInfoSprite = NULL;
 sprite_t		 *topInfoSpriteUpd = NULL;
+sprite_t         *launchTextSprite = NULL;
+sprite_t		 *updateTextSprite = NULL;
 sprite_t         *launchControlsSprite = NULL;
 sprite_t		 *launcherText = NULL;
 sprite_t         *installerText = NULL;

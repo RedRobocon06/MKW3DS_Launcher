@@ -23,9 +23,7 @@ extern cwav_t                  *sfx_sound;
 extern cwav_t                  *lag_sound;
 
 void    InitUpdatesUI(void)
-{
-	removeAppTop(false);
-	
+{	
 	if (!changelogTextsprite)
 		newSpriteFromPNG(&changelogTextsprite, "romfs:/sprites/textSprites/changelogText.png");
 

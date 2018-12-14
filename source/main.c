@@ -143,6 +143,7 @@ int mainLauncher(void)
     initUI();
 	InitUpdatesUI();
 	initCreditsResources();
+	initMainMenuResources();
 	if (!isProperVer) {
 		if (!g_modversion[0]) {
 			changeTopSprite(2);
@@ -244,7 +245,6 @@ int mainInstaller(void)
 	getModVersion();
 	initUI();
 	InitUpdatesUI();
-	initCreditsResources();
 	changeTopSprite(2);
 	FILE* zipFile = NULL;
 	u64 zipSize = 0;

@@ -44,6 +44,7 @@ enum GameRevision {
 typedef struct LaunchSettings_s {
 	u32 region;
 	u32 revision;
+	u8 wasPlgEnabled;
 } LaunchSettings_t;
 
 typedef struct SaveOpts_s
@@ -66,6 +67,7 @@ extern drawableScreen_t *topScreen;
 void launchPluginLoader(TitleWithUpd_t* tinfo) {
 	u32 ret = 0;
 	PluginLoadParameters plgparam;
+	u8 isPlgEnabled = 0;
 	plgparam.noFlash = true;
 	plgparam.lowTitleId = (u32)tinfo->game.titleID;
 	strcpy(plgparam.path, "/CTGP-7/resources/CTGP-7.3gx");
@@ -103,10 +105,13 @@ void launchPluginLoader(TitleWithUpd_t* tinfo) {
 	//
 	ret = plgLdrInit();
 	if (ret) customBreak(0x00F, ret, 0, 0);
-	ret = PLGLDR__SetPluginLoaderState(true);
+	ret = PLGLDR__IsPluginLoaderEnabled(&isPlgEnabled);
+	launchSettings->wasPlgEnabled = isPlgEnabled;
 	if (ret) customBreak(0x00F, ret, 1, 0);
-	ret = PLGLDR__SetPluginLoadParameters(&plgparam);
+	ret = PLGLDR__SetPluginLoaderState(true);
 	if (ret) customBreak(0x00F, ret, 2, 0);
+	ret = PLGLDR__SetPluginLoadParameters(&plgparam);
+	if (ret) customBreak(0x00F, ret, 3, 0);
 	plgLdrExit();
 }
 
