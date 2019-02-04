@@ -23,9 +23,6 @@ static size_t str_result_sz = 0;
 static size_t str_result_written = 0;
 
 char CURL_lastErrorCode[CURL_ERROR_SIZE];
-static char *file_result_buf = NULL;
-static size_t file_result_sz = 0;
-static size_t file_result_written = 0;
 static progressbar_t* file_progbar = NULL;
 static int file_singlePixel = -1;
 static int fileDownCnt = 0;
@@ -148,14 +145,7 @@ int file_progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, 
 	return 0;
 };
 
-bool filecommit() {
-	if (!downfile) return false;
-	fseek(downfile, 0, SEEK_END);
-	u32 byteswritten = fwrite(file_result_buf, 1, file_result_written, downfile);
-	if (byteswritten != file_result_written) return false;
-	file_result_written = 0;
-	return true;
-}
+
 
 char *strdup(const char *s) {
 	char *d = malloc(strlen(s) + 1);   // Space for length plus nul
@@ -205,23 +195,67 @@ void    memcpy32(void *dest, const void *src, size_t count)
 		*dest8_++ = *src8_++;
 }
 
+static size_t file_buffer_pos = 0;
+static size_t file_toCommit_size = 0;
+static char* g_buffers[2] = { NULL };
+static u8 g_index = 0;
+static Thread fsCommitThread;
+static LightEvent readyToCommit;
+static LightEvent waitCommit;
+static bool killThread = false;
+static bool writeError = false;
+#define FILE_ALLOC_SIZE 0x60000
+
+bool filecommit() {
+	if (!downfile) return false;
+	fseek(downfile, 0, SEEK_END);
+	u32 byteswritten = fwrite(g_buffers[!g_index], 1, file_toCommit_size, downfile);
+	if (byteswritten != file_toCommit_size) return false;
+	file_toCommit_size = 0;
+	return true;
+}
+
+static void commitToFileThreadFunc(void* args) {
+	while (true) {
+		LightEvent_Wait(&readyToCommit);
+		if (killThread) threadExit(0);
+		writeError = !filecommit();
+		LightEvent_Signal(&waitCommit);
+	}
+}
+
 static size_t file_handle_data(char *ptr, size_t size, size_t nmemb, void *userdata) {
 	(void)userdata;
 	const size_t bsz = size * nmemb;
 	size_t tofill = 0;
-	if (!file_result_buf) {
-		file_result_sz = 0x60000;
-		file_result_buf = memalign(0x1000, file_result_sz);
-		if (!file_result_buf) return 0;
+	if (writeError) return 0;
+	if (!g_buffers[g_index]) {
+
+		LightEvent_Init(&waitCommit, RESET_STICKY);
+		LightEvent_Init(&readyToCommit, RESET_ONESHOT);
+
+		s32 prio = 0;
+		svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
+		fsCommitThread = threadCreate(commitToFileThreadFunc, NULL, 0x1000, prio - 1, -2, true);
+
+		g_buffers[0] = memalign(0x1000, FILE_ALLOC_SIZE);
+		g_buffers[1] = memalign(0x1000, FILE_ALLOC_SIZE);
+
+		if (!fsCommitThread || !g_buffers[0] || !g_buffers[1]) return 0;
 	}
-	if (file_result_written + bsz >= file_result_sz) {
-		tofill = file_result_sz - file_result_written;
-		memcpy32(file_result_buf + file_result_written, ptr, tofill);
-		file_result_written += tofill;
-		if (!filecommit()) return 0;
+	if (file_buffer_pos + bsz >= FILE_ALLOC_SIZE) {
+		tofill = FILE_ALLOC_SIZE - file_buffer_pos;
+		memcpy32(g_buffers[g_index] + file_buffer_pos, ptr, tofill);
+		
+		LightEvent_Wait(&waitCommit);
+		LightEvent_Clear(&waitCommit);
+		file_toCommit_size = file_buffer_pos + tofill;
+		file_buffer_pos = 0;
+		g_index = !g_index;
+		LightEvent_Signal(&readyToCommit);
 	}
-	memcpy32(file_result_buf + file_result_written, ptr + tofill, bsz - tofill);
-	file_result_written += bsz - tofill;
+	memcpy32(g_buffers[g_index] + file_buffer_pos, ptr + tofill, bsz - tofill);
+	file_buffer_pos += bsz - tofill;
 	return bsz;
 }
 
@@ -258,7 +292,7 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading Files");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", fileDownCnt, totFileDownCnt);
 	updateUI();
-	
+
 	CURL *hnd = curl_easy_init();
 	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, 102400L);
 	curl_easy_setopt(hnd, CURLOPT_URL, URL);
@@ -284,10 +318,27 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 		retcode = cres;
 		goto exit;
 	}
-	filecommit();
+
+	LightEvent_Wait(&waitCommit);
+	LightEvent_Clear(&waitCommit);
+
+	file_toCommit_size = file_buffer_pos;
+	if (!filecommit()) {
+		sprintf(CURL_lastErrorCode, "Couldn't commit to file.");
+		retcode = 2;
+		goto exit;
+	}
 	fflush(downfile);
 	
 exit:
+	if (fsCommitThread) {
+		killThread = true;
+		LightEvent_Signal(&readyToCommit);
+		threadJoin(fsCommitThread, U64_MAX);
+		killThread = false;
+		fsCommitThread = NULL;
+	}
+
 	socExit();
 	
 	if (socubuf) {
@@ -297,11 +348,20 @@ exit:
 		fclose(downfile);
 		downfile = NULL;
 	}
+	if (g_buffers[0]) {
+		free(g_buffers[0]);
+		g_buffers[0] = NULL;
+	}
+	if (g_buffers[1]) {
+		free(g_buffers[1]);
+		g_buffers[1] = NULL;
+	}
+	g_index = 0;
 	file_progbar = NULL;
 	file_singlePixel = -1;
-	file_result_buf = NULL;
-	file_result_written = 0;
-	file_result_sz = 0;
+	file_buffer_pos = 0;
+	file_toCommit_size = 0;
+	writeError = false;
 	
 	return retcode;
 }

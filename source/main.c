@@ -133,6 +133,7 @@ int mainLauncher(void)
     ptmSysmInit();
 	acInit();
 	csndInit();
+	FSUSER_SetPriority(-16);
 	drawInit();
 	aptHook(&aptCookie, mainAptHook, NULL);
 

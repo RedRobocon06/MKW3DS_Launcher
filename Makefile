@@ -33,8 +33,8 @@ LIBRARIES := citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
 
 ifeq ($(LAUNCHER_M), 1)
 	VERSION_MAJOR := 1
-	VERSION_MINOR := 2
-	VERSION_MICRO := 3
+	VERSION_MINOR := 3
+	VERSION_MICRO := 0
 else
 	VERSION_MAJOR := 1
 	VERSION_MINOR := 0
