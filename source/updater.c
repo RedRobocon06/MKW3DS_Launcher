@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include "Unicode.h"
 #include "sound.h"
+#include "memcpyctr.h"
 
 typedef struct downFileInfo_s
 {
@@ -28,6 +29,7 @@ static int file_singlePixel = -1;
 static int fileDownCnt = 0;
 static int totFileDownCnt = 0;
 char updatingVer[30] = { 0 };
+char* updatingFile = NULL;
 FILE *downfile = NULL;
 char progTextBuf[2][20];
 
@@ -91,7 +93,8 @@ void updateTop(curl_off_t dlnow, curl_off_t dltot, float speed) {
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading Files");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", fileDownCnt, totFileDownCnt);
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n%s / %s", getProgText(dlnow, 0), getProgText(dltot, 1));
-	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
+	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s\n", speed);
+	if (updatingFile) newAppTopMultiline(DEFAULT_COLOR, CENTER | SMALL, updatingFile);
 }
 
 static size_t handle_data(char *ptr, size_t size, size_t nmemb, void *userdata) {
@@ -120,7 +123,7 @@ static size_t handle_data(char *ptr, size_t size, size_t nmemb, void *userdata) 
 }
 
 int file_progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
-	if (!(dltotal && dlnow)) return 0;
+	if (!(dltotal && dlnow) || dltotal < 1024) return 0;
 	static float oldprogress = 0;
 	static u64 timer = 0;
 	static u64 timer2 = 0;
@@ -128,8 +131,8 @@ int file_progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, 
 		oldprogress = 0;
 		timer2 = 0;
 		timer = Timer_Restart();
+		file_singlePixel = 3 * dltotal / (curl_off_t)(file_progbar->rectangle->width);
 	}
-	file_singlePixel = dltotal / (curl_off_t)(file_progbar->rectangle->width);
 	if (dlnow - oldprogress >= file_singlePixel) {
 		file_progbar->rectangle->amount = ((float)dlnow) / ((float)dltotal);
 		timer2 = Timer_Restart();
@@ -140,12 +143,17 @@ int file_progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, 
 		updateTop(dlnow, dltotal, ((float)progbytes) / ((float)progmsec));
 		updateUI();
 		oldprogress = dlnow;
-		
 	}
 	return 0;
 };
 
-
+char* getFileFromPath(char* file) {
+	char* ret = file;
+	while (*file) {
+		if (*file++ == '/') ret = file;
+	}
+	return ret;
+}
 
 char *strdup(const char *s) {
 	char *d = malloc(strlen(s) + 1);   // Space for length plus nul
@@ -216,8 +224,10 @@ bool filecommit() {
 }
 
 static void commitToFileThreadFunc(void* args) {
+	LightEvent_Signal(&waitCommit);
 	while (true) {
 		LightEvent_Wait(&readyToCommit);
+		LightEvent_Clear(&readyToCommit);
 		if (killThread) threadExit(0);
 		writeError = !filecommit();
 		LightEvent_Signal(&waitCommit);
@@ -232,7 +242,7 @@ static size_t file_handle_data(char *ptr, size_t size, size_t nmemb, void *userd
 	if (!g_buffers[g_index]) {
 
 		LightEvent_Init(&waitCommit, RESET_STICKY);
-		LightEvent_Init(&readyToCommit, RESET_ONESHOT);
+		LightEvent_Init(&readyToCommit, RESET_STICKY);
 
 		s32 prio = 0;
 		svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
@@ -245,16 +255,17 @@ static size_t file_handle_data(char *ptr, size_t size, size_t nmemb, void *userd
 	}
 	if (file_buffer_pos + bsz >= FILE_ALLOC_SIZE) {
 		tofill = FILE_ALLOC_SIZE - file_buffer_pos;
-		memcpy32(g_buffers[g_index] + file_buffer_pos, ptr, tofill);
+		memcpy_ctr(g_buffers[g_index] + file_buffer_pos, ptr, tofill);
 		
 		LightEvent_Wait(&waitCommit);
 		LightEvent_Clear(&waitCommit);
 		file_toCommit_size = file_buffer_pos + tofill;
 		file_buffer_pos = 0;
+		svcFlushProcessDataCache(CURRENT_PROCESS_HANDLE, g_buffers[g_index], file_toCommit_size);
 		g_index = !g_index;
 		LightEvent_Signal(&readyToCommit);
 	}
-	memcpy32(g_buffers[g_index] + file_buffer_pos, ptr + tofill, bsz - tofill);
+	memcpy_ctr(g_buffers[g_index] + file_buffer_pos, ptr + tofill, bsz - tofill);
 	file_buffer_pos += bsz - tofill;
 	return bsz;
 }
@@ -287,6 +298,7 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	file_progbar = progbar;
 	progbar->isHidden = false;
 	progbar->rectangle->amount = 0;
+	updatingFile = getFileFromPath(filepath);
 	clearTop(false);
 	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, updatingVer);
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading Files");
@@ -294,9 +306,9 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	updateUI();
 
 	CURL *hnd = curl_easy_init();
-	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, 102400L);
+	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, FILE_ALLOC_SIZE);
 	curl_easy_setopt(hnd, CURLOPT_URL, URL);
-	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 0L); 
 	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
@@ -323,6 +335,8 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	LightEvent_Clear(&waitCommit);
 
 	file_toCommit_size = file_buffer_pos;
+	svcFlushProcessDataCache(CURRENT_PROCESS_HANDLE, g_buffers[g_index], file_toCommit_size);
+	g_index = !g_index;
 	if (!filecommit()) {
 		sprintf(CURL_lastErrorCode, "Couldn't commit to file.");
 		retcode = 2;
@@ -362,6 +376,7 @@ exit:
 	file_buffer_pos = 0;
 	file_toCommit_size = 0;
 	writeError = false;
+	updatingFile = NULL;
 	
 	return retcode;
 }
@@ -672,8 +687,14 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 			if (downfileinfo[i + 1] && downfileinfo[i + 1]->mode == 'T') {
 				tmpbuf1 = concat(DEFAULT_MOD_PATH, downfileinfo[i]->fileName);
 				tmpbuf2 = concat(DEFAULT_MOD_PATH, downfileinfo[i+1]->fileName);
-				remove(tmpbuf2);
-				rename(tmpbuf1, tmpbuf2);
+				FILE* dst = fopen(tmpbuf2, "r");
+				if (dst) {
+					fclose(dst);
+				}
+				else {
+					remove(tmpbuf2);
+					rename(tmpbuf1, tmpbuf2);
+				}
 			}
 		}
 		else if (downfileinfo[i]->mode == 'D') {

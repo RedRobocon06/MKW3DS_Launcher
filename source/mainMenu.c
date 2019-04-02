@@ -127,7 +127,6 @@ int     mainMenu(void)
 	u64 timer2 = Timer_Restart();
 	V32Button->isSelected = true;
 	bool neeedToUpdate = forceUpdate;
-	downloadFile("https://files.gamebanana.com/gamefiles/ctgp-7.zip", "/test.zip", updateProgBar);
     while (userTouch == false && aptMainLoop())
     {
 		if (Timer_HasTimePassed(17, timer)) {

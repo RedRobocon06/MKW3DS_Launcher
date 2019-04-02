@@ -126,6 +126,7 @@
   <ItemGroup>
     <None Include="lib\ctrcommon\data\ctrcommon_font.bin" />
     <None Include="source\csvc.s" />
+    <None Include="source\memcpyctr.s" />
     <None Include="source\svc.s" />
     <None Include="source\vshader.v.pica" />
   </ItemGroup>
@@ -154,6 +155,7 @@
     <ClInclude Include="source\drawableObject.h" />
     <ClInclude Include="source\graphics.h" />
     <ClInclude Include="source\clock.h" />
+    <ClInclude Include="source\memcpyctr.h" />
     <ClInclude Include="source\plgldr.h" />
     <ClInclude Include="source\sound.h" />
     <ClInclude Include="source\json\json.h" />

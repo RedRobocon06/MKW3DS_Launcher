@@ -21,6 +21,7 @@
     <None Include="source\csvc.s" />
     <None Include="source\svc.s" />
     <None Include="source\vshader.v.pica" />
+    <None Include="source\memcpyctr.s" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\ctrcommon\include\ctrcommon\app.hpp">
@@ -114,6 +115,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="source\plgldr.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="source\memcpyctr.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
