@@ -34,7 +34,7 @@ LIBRARIES := citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
 ifeq ($(LAUNCHER_M), 1)
 	VERSION_MAJOR := 1
 	VERSION_MINOR := 3
-	VERSION_MICRO := 1
+	VERSION_MICRO := 2
 else
 	VERSION_MAJOR := 1
 	VERSION_MINOR := 0
@@ -86,9 +86,14 @@ ifeq ($(TARGET),3DS)
     CPU_SPEED := 268MHz
     ENABLE_L2_CACHE := true
 
-    ICON_FLAGS := --flags visible,ratingrequired,recordusage --cero 153 --esrb 153 --usk 153 --pegigen 153 --pegiptr 153 --pegibbfc 153 --cob 153 --grb 153 --cgsrr 153
+    ICON_FLAGS := --flags visible,recordusage
 
-    ROMFS_DIR := romfs
+	ifeq ($(LAUNCHER_M), 1)
+		ROMFS_DIR := romfs
+	else 
+		ROMFS_DIR := romfs_installer
+	endif
+
     BANNER_AUDIO := resources/audio.cwav
     
     BANNER_IMAGE := resources/banner.cgfx

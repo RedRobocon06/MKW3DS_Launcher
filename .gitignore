@@ -253,3 +253,4 @@ ModelManifest.xml
 *.3dsx
 *.map
 output/
+romfs_installer/

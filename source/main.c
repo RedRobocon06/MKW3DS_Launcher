@@ -22,6 +22,7 @@ extern u64 launchAppID;
 extern FS_MediaType launchAppMedtype;
 extern progressbar_t *updateProgBar;
 extern sprite_t* topInfoSpriteUpd;
+extern sprite_t* topInfoSprite;
 
 extern cwav_t* sfx_sound;
 extern cwav_t* lag_sound;
@@ -250,7 +251,7 @@ int mainInstaller(void)
 	FILE* zipFile = NULL;
 	u64 zipSize = 0;
 	bool continueInstall = true;
-	zipFile = fopen("/CTGP-7.zip", "rb");
+	zipFile = fopen("romfs:/CTGP-7.zip", "rb");
 	if (zipFile) {
 		fseek(zipFile, 0, SEEK_END);
 		zipSize = ftell(zipFile);
@@ -295,31 +296,22 @@ int mainInstaller(void)
 		clearTop(false);
 		newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "CTGP-7 installer");
 		if (!g_modversion[0]) {
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo CTGP-7 files detected. Would you");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install from CTGP-7.zip?\n");
+			newAppTop(COLOR_GREEN, MEDIUM | CENTER, "\nStart with installation?\n");
 		}
 		else {
 			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nCTGP-7 files detected. Would you");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to reinstall from CTGP-7.zip?\n");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to reinstall the entire mod?\n");
 		}
-		if (zipFile) {
-			newAppTop(COLOR_GREEN, MEDIUM | CENTER, "File found!\n");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
-		}
-		else {
-			newAppTop(COLOR_RED, MEDIUM | CENTER, "File not found in the SD root.");
-			newAppTop(COLOR_RED, MEDIUM | CENTER, "(This file can be found");
-			newAppTop(COLOR_RED, MEDIUM | CENTER, "searching in google.)\n");
-			newAppTop(COLOR_GREY, MEDIUM | CENTER, FONT_A": Install");
-		}
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
 		u32 keys = 0;
 		bool installLoop = true;
 		while (installLoop && aptMainLoop()) {
-			if ((keys & KEY_A) && zipFile) {
+			if ((keys & KEY_A)) {
 				g_modversion[0] = '\0';
 				PLAYBEEP();
 				u64 ret = installMod(updateProgBar, zipSize);
+				appTop->sprite = topInfoSprite;
 				u32 retlow = (u32)ret;
 				u32 rethigh = (u32)(ret >> 32);
 				clearTop(false);
@@ -331,22 +323,6 @@ int mainInstaller(void)
 					newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNot enough free space, %dMB", rethigh);
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "are needed to install the mod.");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "If you can't free more space");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "install the mod manually.\n");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
-				}
-				else if (retlow == 13) {
-					newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Installer and zip version");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "mismatch, make sure you have");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "both the latest zip and installer.\n");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
-				}
-				else if (retlow == 14) {
-					newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Zip file is invalid.\n");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Make sure you didn't repack");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "the file manually (MAC).\n");
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
 				}
 				else if (retlow == 15) {
@@ -359,7 +335,7 @@ int mainInstaller(void)
 				}
 				else {
 					newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nError occured during");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Error occured during");
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "installation, error code:\n");
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "%08X %08X\n", retlow, rethigh);
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "You can check the error here");

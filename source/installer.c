@@ -70,7 +70,7 @@ int zipCallBack(u32 curr, u32 total) {
 		timer = Timer_Restart();
 		clearTop(false);
 		newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
-		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\nExtracting CTGP-7.zip\n");
+		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\nExtracting files\n");
 		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", curr, total);
 		PLAYCLICK();
 		updateUI();
@@ -109,7 +109,7 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 		STOPLAG();
 		return 3 | ((u64)ret << 32);
 	}
-	Zip* modZip = ZipOpen("/CTGP-7.zip");
+	Zip* modZip = ZipOpen("romfs:/CTGP-7.zip");
 	if (modZip == NULL) {
 		STOPLAG();
 		return 14;
@@ -117,7 +117,7 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 	chdir("/CTGP-7tmp");
 	clearTop(false);
 	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
-	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\nExtracting CTGP-7.zip");
+	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\nExtracting files");
 	updateUI();
 	progbar->rectangle->amount = 0;
 	progbar->isHidden = false;
