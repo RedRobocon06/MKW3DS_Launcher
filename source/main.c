@@ -68,7 +68,7 @@ static void mainAptHook(APT_HookType hook, void* param) {
 void getModVersion() {
 	memset(g_modversion, 0, 15);
 	FILE* file = NULL;
-	file = fopen("/CTGP-7/config/version.bin", "r");
+	file = fopen("/MKW3DS/config/version.bin", "r");
 	if (!file) {
 		return;
 	}
@@ -78,7 +78,7 @@ void getModVersion() {
 	file = NULL;
 	textVersion[0] = '\0';
 	memset(g_launcherversion, 0, 3);
-	file = fopen("/CTGP-7/config/expectedVer.bin", "r");
+	file = fopen("/MKW3DS/config/expectedVer.bin", "r");
 	if (!file) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x1);
 	fread(g_launcherversion, 1, 3, file);
 	if (!g_modversion[0] || !g_launcherversion[0]) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x2);
@@ -118,7 +118,7 @@ bool isExpectedVersion() {
 	}
 	u32 vervar = (APP_VERSION_MAJOR) | (APP_VERSION_MINOR << 8) | (APP_VERSION_MICRO << 16);
 	FILE* file = NULL;
-	file = fopen("/CTGP-7/config/expectedVer.bin", "w");
+	file = fopen("/MKW3DS/config/expectedVer.bin", "w");
 	if (!file) customBreak(0xC001BEEF, 0xFEEDDEAD, 0xBAAAAAAD, 0x3);
 	fwrite(&vervar, 1, 3, file);
 	fclose(file);
@@ -151,8 +151,8 @@ int mainLauncher(void)
 			changeTopSprite(2);
 			clearTop(false);
 			newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Fatal error");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo CTGP-7 files detected. Use the");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 installer to fix the files.");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo MKW3DS files detected. Did");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "you followed the \"README.TXT\"?");
 			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
 			u32 keys = 0;
 			bool installLoop = true;
@@ -261,7 +261,7 @@ int mainInstaller(void)
 	if (g_modversion[0]) {
 		clearTop(false);
 		newAppTop(COLOR_ORANGE, MEDIUM | BOLD | CENTER, "WARNING");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Did you install the CTGP-7");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Did you install the MKW3DS");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "installer by mistake?\n");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "To run the normal version:");
 		if (!envIsHomebrew()) {
@@ -294,15 +294,15 @@ int mainInstaller(void)
 	}
 	if (continueInstall) {
 		clearTop(false);
-		newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "CTGP-7 installer");
+		newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "MKWII3DS installer");
 		if (!g_modversion[0]) {
 			newAppTop(COLOR_GREEN, MEDIUM | CENTER, "\nStart with installation?\n");
 		}
 		else {
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nCTGP-7 files detected. Would you");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to reinstall the entire mod?\n");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nMKWII3DS files detected.");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\n(Unfortunately the installer is not ready atm)");
 		}
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
+		//newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
 		u32 keys = 0;
 		bool installLoop = true;
@@ -328,8 +328,8 @@ int mainInstaller(void)
 				else if (retlow == 15) {
 					newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Installation failed!");
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Failed to create a backup");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "of the CTGP-7 save file.\n");
-					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\"SD:/CTGP-7savebak/\"");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "of the MKW3DS save file.\n");
+					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\"SD:/MKW3DSsavebak/\"");
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "already exists.\n");
 					newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
 				}

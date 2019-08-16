@@ -97,7 +97,7 @@ static inline void drawUITop(void)
     setScreen(GFX_TOP);
     
     topScreen->draw(topScreen);
-    setTextColor(COLOR_BLANK);
+    setTextColor(COLOR_BLACK);
 	if (g_modversion[0]) {
 		if (textVersion[0] == '\0') {
 			sprintf(textVersion, "Ver. %s", g_modversion);
