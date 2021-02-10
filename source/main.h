@@ -50,17 +50,17 @@ typedef uint8_t   u8;
 #define LOAD_FAILED                 (char *)s_error[17]
 #define NTR_ALREADY_LAUNCHED        (char *)s_error[18]
 
-#define DEFAULT_MOD_PATH "/CTGP-7"
-#define FILE_DOWN_PREFIX "https://github.com/mariohackandglitch/CTGP-7updates/raw/master/updates/data"
-#define TOINSTALL_CIA_PATH "/CTGP-7/cia/tooInstall.cia"
-#define TOINSTALL_3DSX_PATH "/CTGP-7/cia/tooInstall.3dsx"
-#define FINAL_CIA_PATH "/CTGP-7/cia/CTGP-7.cia"
-#define TEMPORAL_3DSX_PATH "/CTGP-7/cia/CTGP-7.3dsx"
-#define FINAL_3DSX_PATH "/3ds/CTGP-7/CTGP-7.3dsx"
-#define LAUNCH_OPT_SAVE "/CTGP-7/config/launchopt.bin"
-#define PLGLDR_TMP "/CTGP-7/tempboot.firm"
-#define PLGLDR_URL "https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/luma/boot.firm"
-#define CTGP7_TID (0x0004000003070C00ULL)
+#define DEFAULT_MOD_PATH "/MKW3DS"
+#define FILE_DOWN_PREFIX "https://github.com/mariohackandglitch/CTGP-7updates/raw/master/updates/data" //TODO: replace this
+#define TOINSTALL_CIA_PATH "/MKW3DS/cia/tooInstall.cia"
+#define TOINSTALL_3DSX_PATH "/MKW3DS/cia/tooInstall.3dsx"
+#define FINAL_CIA_PATH "/MKW3DS/cia/MKW3DS.cia"
+#define TEMPORAL_3DSX_PATH "/MKW3DS/cia/MKW3DS.3dsx"
+#define FINAL_3DSX_PATH "/3ds/MKW3DS/MKW3DS.3dsx"
+#define LAUNCH_OPT_SAVE "/MKW3DS/config/launchopt.bin"
+#define PLGLDR_TMP "/MKW3DS/tempboot.firm"
+#define PLGLDR_URL "https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/luma/boot.firm" //This doesn't need to be edited, as it fetches latest update.
+#define CTGP7_TID (0x0004000003070C00ULL) //TODO: Rename this!!!!! (or else it will replace CTGP7 app)
 
 typedef struct  updateData_s
 {
@@ -154,7 +154,7 @@ u32     findNearestSTMFD(u32 base, u32 pos);
 u32     searchBytes(u32 startAddr, u32 endAddr, u8* pat, int patlen, int step);
 
 /*
-** firmware.c   
+** firmware.c
 */
 Result  bnInitParamsByFirmware(void);
 

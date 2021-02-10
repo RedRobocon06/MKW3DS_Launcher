@@ -100,7 +100,7 @@ void updateTop(curl_off_t dlnow, curl_off_t dltot, float speed) {
 static size_t handle_data(char *ptr, size_t size, size_t nmemb, void *userdata) {
 	(void)userdata;
 	const size_t bsz = size * nmemb;
-	
+
 	if (!str_result_buf) {
 		str_result_sz = 1 << 9;
 		str_result_buf = memalign(0x1000, 1 << 9);
@@ -256,7 +256,7 @@ static size_t file_handle_data(char *ptr, size_t size, size_t nmemb, void *userd
 	if (file_buffer_pos + bsz >= FILE_ALLOC_SIZE) {
 		tofill = FILE_ALLOC_SIZE - file_buffer_pos;
 		memcpy_ctr(g_buffers[g_index] + file_buffer_pos, ptr, tofill);
-		
+
 		LightEvent_Wait(&waitCommit);
 		LightEvent_Clear(&waitCommit);
 		file_toCommit_size = file_buffer_pos + tofill;
@@ -273,28 +273,28 @@ static size_t file_handle_data(char *ptr, size_t size, size_t nmemb, void *userd
 int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 
 	int retcode = 0;
-	
-	
+
+
 	void *socubuf = memalign(0x1000, 0x100000);
 	if (!socubuf) {
 		sprintf(CURL_lastErrorCode, "Failed to allocate memory.");
 		retcode = 1;
 		goto exit;
 	}
-	
+
 	int res = socInit(socubuf, 0x100000);
 	if (R_FAILED(res)) {
 		sprintf(CURL_lastErrorCode, "socInit returned: 0x%08X", res);
 		goto exit;
 	}
-	
+
 	downfile = fopen_mkdir(filepath, "wb");
 	if (!downfile || !progbar) {
 		sprintf(CURL_lastErrorCode, "Failed to create file.");
 		retcode = 4;
 		goto exit;
 	}
-	
+
 	file_progbar = progbar;
 	progbar->isHidden = false;
 	progbar->rectangle->amount = 0;
@@ -308,8 +308,8 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	CURL *hnd = curl_easy_init();
 	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, FILE_ALLOC_SIZE);
 	curl_easy_setopt(hnd, CURLOPT_URL, URL);
-	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 0L); 
-	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
+	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 0L);
+	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) MKW3DS/1.0 MKW3DS/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(hnd, CURLOPT_ACCEPT_ENCODING, "gzip");
@@ -321,11 +321,11 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
 	curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
 	curl_easy_setopt(hnd, CURLOPT_STDERR, stdout);
-	
+
 	CURL_lastErrorCode[0] = 0;
 	CURLcode cres = curl_easy_perform(hnd);
 	curl_easy_cleanup(hnd);
-	
+
 	if (cres != CURLE_OK) {
 		retcode = cres;
 		goto exit;
@@ -343,7 +343,7 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 		goto exit;
 	}
 	fflush(downfile);
-	
+
 exit:
 	if (fsCommitThread) {
 		killThread = true;
@@ -354,7 +354,7 @@ exit:
 	}
 
 	socExit();
-	
+
 	if (socubuf) {
 		free(socubuf);
 	}
@@ -377,7 +377,7 @@ exit:
 	file_toCommit_size = 0;
 	writeError = false;
 	updatingFile = NULL;
-	
+
 	return retcode;
 }
 
@@ -406,7 +406,7 @@ int downloadString(char* URL, char** out) {
 	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, 102400L);
 	curl_easy_setopt(hnd, CURLOPT_URL, URL);
 	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
-	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
+	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) MKW3DS/1.0 MKW3DS/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_ACCEPT_ENCODING, "gzip");
 	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
@@ -455,7 +455,7 @@ bool downloadChangelog() {
 	int index1 = 0;
 	int index2 = 0;
 
-	int retcode = downloadString("https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/updates/changeloglist", &downstr);
+	int retcode = downloadString("https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/updates/changeloglist", &downstr); //TODO: add the mario kart wii 3ds changeloglist (new one.)
 	if (retcode || downstr == NULL) {
 		if (downstr) {
 			free(downstr);
@@ -493,8 +493,8 @@ bool downloadChangelog() {
 bool updateAvailable() {
 	if (!isWifiAvailable()) return false;
 	char* downstr = NULL;
-	int retcode = downloadString("http://bit.ly/ctgp7_latest", &downstr);
-	//NOTE: bit.ly is used to know how many people use the mod and from which country they are. This data helps CTGP-7 devs to know the most used languages, the amount of people playing, etc.. This data is not shared with anyone and is anonymus (IPs not registered) 
+	int retcode = downloadString("http://bit.ly/ctgp7_latest", &downstr); //NOTE: this is the actual link without bit.ly, to change later: https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/updates/latestver
+	//NOTE: bit.ly is used to know how many people use the mod and from which country they are. This data helps MKW3DS devs to know the most used languages, the amount of people playing, etc.. This data is not shared with anyone and is anonymus (IPs not registered), but right now, it will disabled as we don't need it.
 	if (retcode || downstr == NULL) {
 		if (downstr) {
 			free(downstr);
@@ -554,7 +554,7 @@ static inline void freeFileInfo(downFileInfo_t** fileInfo) {
 
 static void writeFaultyURL(char* URL) {
 	if (!URL) return;
-	FILE* tmpfl = fopen("/CTGP-7/failedURL.txt", "w");
+	FILE* tmpfl = fopen("/MKW3DS/failedURL.txt", "w");
 	fwrite(URL, 1, strlen(URL), tmpfl);
 	fclose(tmpfl);
 }
@@ -596,12 +596,12 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	if (index == -1) return 1;
 	index++;
 	char*  URL = NULL;
-	char *end_str; 
+	char *end_str;
 	char* token;
 	FILE* ciaFile = NULL;
 	FILE* brewFile = NULL;
 	downFileInfo_t** downfileinfo = NULL;
-	int downfileinfocnt = 0; 
+	int downfileinfocnt = 0;
 	totFileDownCnt = 0;
 	fileDownCnt = 0;
 	remove(TOINSTALL_CIA_PATH);
@@ -618,10 +618,10 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		}
 		char* downstr = NULL;
 		if (!URL) URL = malloc(200);
-		int filecount = 0; 
-		sprintf(URL, "https://github.com/mariohackandglitch/CTGP-7updates/releases/download/v%s/filelist.txt", versionList[index]);
-		int retcode = downloadString(URL, &downstr); 
-		
+		int filecount = 0;
+		sprintf(URL, "https://github.com/mariohackandglitch/CTGP-7updates/releases/download/v%s/filelist.txt", versionList[index]); //TODO: replace that.
+		int retcode = downloadString(URL, &downstr);
+
 		if (retcode || downstr == NULL) {
 			if (downstr) {
 				free(downstr);
@@ -635,24 +635,24 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		URL = NULL;
 		for (int i = 0; downstr[i]; i++) if (downstr[i] == '\n') filecount++;
 		if (!downfileinfo) {
-			downfileinfo = malloc((filecount) * 4); 
+			downfileinfo = malloc((filecount) * 4);
 		}
 		else {
-			downfileinfo = realloc(downfileinfo, (downfileinfocnt + filecount) * 4); 
+			downfileinfo = realloc(downfileinfo, (downfileinfocnt + filecount) * 4);
 		}
 		if (!downfileinfo) {
 			EnableSleep();
 			return 4;
 		}
-		int index1 = 0; 
-		for (int i = 0; i < filecount; i++) downfileinfo[i + downfileinfocnt] = createNewFileInfo(index); 
+		int index1 = 0;
+		for (int i = 0; i < filecount; i++) downfileinfo[i + downfileinfocnt] = createNewFileInfo(index);
 		token = strtok_r(downstr, "\n", &end_str);
 		while (token != NULL && index1 < filecount)
 		{
 			downfileinfo[index1 + downfileinfocnt]->mode = token[0];
 			downfileinfo[index1 + downfileinfocnt]->fileName = malloc(strlen(&token[1]) + 1);
 			strcpy(downfileinfo[index1 + downfileinfocnt]->fileName, &token[1]);
-			index1++; 
+			index1++;
 			token = strtok_r(NULL, "\n", &end_str);
 		}
 		downfileinfocnt += filecount;
@@ -660,23 +660,23 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		free(downstr);
 	}
 	sprintf(updatingVer, "Updating to %s", versionList[index - 1]);
-	downfileinfo = realloc(downfileinfo, (downfileinfocnt + 1) * 4); 
-	if (!downfileinfo) svcBreak((UserBreakType)0); 
+	downfileinfo = realloc(downfileinfo, (downfileinfocnt + 1) * 4);
+	if (!downfileinfo) svcBreak((UserBreakType)0);
 	downfileinfo[downfileinfocnt] = NULL;
 	STOPLAG();
-	for (int i = 0; downfileinfo[i]; i++) { 
+	for (int i = 0; downfileinfo[i]; i++) {
 		downFileInfo_t* src = downfileinfo[i];
 		fileNameTrim(src->fileName);
 		if (!(src->mode == 'M')) continue;
-		for (int j = 0; downfileinfo[j]; j++) { 
+		for (int j = 0; downfileinfo[j]; j++) {
 			downFileInfo_t* dst = downfileinfo[j];
-			if (dst->mode == 'I' || dst->mode == 'F' || dst->mode == 'T') continue; 
-			if (src->updateIndex < dst->updateIndex && strcmp(src->fileName, dst->fileName) == 0) { 
-				src->mode = 'I'; 
+			if (dst->mode == 'I' || dst->mode == 'F' || dst->mode == 'T') continue;
+			if (src->updateIndex < dst->updateIndex && strcmp(src->fileName, dst->fileName) == 0) {
+				src->mode = 'I';
 				break;
 			}
 		}
-		if (src->mode == 'M') totFileDownCnt++; 
+		if (src->mode == 'M') totFileDownCnt++;
 	}
 	clearTop(false);
 	fileDownCnt = 1;
@@ -749,11 +749,11 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	}
 	freeFileInfo(downfileinfo);
 	downfileinfo = NULL;
-	ciaFile = fopen(TOINSTALL_CIA_PATH, "rb");
+	ciaFile = fopen(TOINSTALL_CIA_PATH, "rb"); //rb means readbinary?
 	if (ciaFile) {
 		amInit();
 		AM_TitleEntry manInfo = { 0 };
-		u64 tid = CTGP7_TID;
+		u64 tid = MKW3DS_TID;
 		AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &manInfo);
 		if (manInfo.size > 0) {
 			Handle handle;
@@ -830,7 +830,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		remove(FINAL_CIA_PATH);
 		rename(TOINSTALL_CIA_PATH, FINAL_CIA_PATH);
 	}
-	brewFile = fopen(TOINSTALL_3DSX_PATH, "rb");
+	brewFile = fopen(TOINSTALL_3DSX_PATH, "rb");  //r is used to open text files (read), rb is used to open non-text files (read binary?)
 	if (brewFile) {
 		fclose(brewFile);
 		FILE* endBrewFile = fopen_mkdir(FINAL_3DSX_PATH, "w"); // Generate path
@@ -847,7 +847,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		rename(TOINSTALL_3DSX_PATH, FINAL_3DSX_PATH);
 		*restartNeeded = true;
 	}
-	FILE* file = fopen("/CTGP-7/config/version.bin", "w");
+	FILE* file = fopen("/MKW3DS/config/version.bin", "w"); //w is write
 	fwrite(versionList[index - 1], 1, strlen(versionList[index - 1]), file);
 	fclose(file);
 	progbar->isHidden = true;

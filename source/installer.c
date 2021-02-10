@@ -69,7 +69,7 @@ int zipCallBack(u32 curr, u32 total) {
 	if (Timer_HasTimePassed(10, timer)) {
 		timer = Timer_Restart();
 		clearTop(false);
-		newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
+		newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
 		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\nExtracting files\n");
 		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", curr, total);
 		PLAYCLICK();
@@ -86,14 +86,14 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Preparing to install");
 	updateUI();
-	if (existsDirectory("/MKW3DS/savefs")) {
-		if (renameDir("/MKW3DS/savefs", "/MKW3DSsavebak")) {
+	if (existsDirectory("/CTGP-7/savefs")) {
+		if (renameDir("/CTGP-7/savefs", "/CTGP-7savebak")) {
 			STOPLAG();
 			return 15;
 		}
 	}
-	deleteDirectory("/MKW3DS");
-	deleteDirectory("/MKW3DStmp");
+	deleteDirectory("/CTGP-7");
+	deleteDirectory("/CTGP-7tmp");
 	u64 freeBytes = 0;
 	Result ret = getFreeSpace(&freeBytes);
 	if (ret < 0) {
@@ -104,19 +104,19 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 		STOPLAG();
 		return 2 | ((u64)(((zipsize + 100000000) - freeBytes) / 1000000) << 32);
 	}
-	ret = mkdir("/MKW3DStmp", 777);
+	ret = mkdir("/CTGP-7tmp", 777);
 	if (ret != 0) {
 		STOPLAG();
 		return 3 | ((u64)ret << 32);
 	}
-	Zip* modZip = ZipOpen("romfs:/mkw3ds.zip");
+	Zip* modZip = ZipOpen("romfs:/CTGP-7.zip");
 	if (modZip == NULL) {
 		STOPLAG();
 		return 14;
 	}
-	chdir("/MKW3DStmp");
+	chdir("/CTGP-7tmp");
 	clearTop(false);
-	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
+	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\nExtracting files");
 	updateUI();
 	progbar->rectangle->amount = 0;
@@ -127,25 +127,25 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 	progbar->isHidden = true;
 	STARTLAG();
 	clearTop(false);
-	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
+	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\nFinishing installation.");
 	updateUI();
 	FILE* vercheck = NULL;
-	vercheck = fopen("/MKW3DStmp/installerver.bin", "rb");
+	vercheck = fopen("/CTGP-7tmp/installerver.bin", "rb");
 	if (!vercheck) {
 		STOPLAG();
-		deleteDirectory("/MKW3DStmp");
+		deleteDirectory("/CTGP-7tmp");
 		return 12;
 	}
 	fread(verRead, 1, 3, vercheck);
 	fclose(vercheck);
 	if (strcmp(EXPECTED_INSTALLER_VER, verRead) != 0) {
 		STOPLAG();
-		deleteDirectory("/MKW3DStmp");
+		deleteDirectory("/CTGP-7tmp");
 		return 13;
 	}
-	ret = renameDir("/MKW3DStmp/files/MKW3DS", "/MKW3DS");
-	deleteDirectory("/MKW3DStmp");
+	ret = renameDir("/CTGP-7tmp/files/CTGP-7", "/CTGP-7");
+	deleteDirectory("/CTGP-7tmp");
 	if (ret < 0) {
 		STOPLAG();
 		return 4 | ((u64)ret << 32);
@@ -203,7 +203,7 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 					timer1 = Timer_Restart();
 					speed = ((float)(filePos - oldprog)) / ((float)delaymsec);
 					clearTop(false);
-					newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
+					newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
 					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\nInstalling App");
 					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\n%s / %s", getProgText(filePos, 0), getProgText(fileSize, 1));
 					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
@@ -213,7 +213,7 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 			}
 			progbar->rectangle->amount = 1;
 			clearTop(false);
-			newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
+			newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
 			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\nInstalling App");
 			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\n%s / %s", getProgText(filePos, 0), getProgText(fileSize, 1));
 			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);

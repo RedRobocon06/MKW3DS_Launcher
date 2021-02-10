@@ -151,8 +151,8 @@ int mainLauncher(void)
 			changeTopSprite(2);
 			clearTop(false);
 			newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Fatal error");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo MKW3DS files detected. Did");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "you followed the \"README.TXT\"?");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nNo MKW3DS files detected. Use the");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "MKW3DS installer to fix the files.");
 			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
 			u32 keys = 0;
 			bool installLoop = true;
@@ -251,7 +251,7 @@ int mainInstaller(void)
 	FILE* zipFile = NULL;
 	u64 zipSize = 0;
 	bool continueInstall = true;
-	zipFile = fopen("romfs:/CTGP-7.zip", "rb");
+	zipFile = fopen("romfs:/MKW3DS.zip", "rb");
 	if (zipFile) {
 		fseek(zipFile, 0, SEEK_END);
 		zipSize = ftell(zipFile);
@@ -294,15 +294,15 @@ int mainInstaller(void)
 	}
 	if (continueInstall) {
 		clearTop(false);
-		newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "MKWII3DS installer");
+		newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "MKW3DS installer");
 		if (!g_modversion[0]) {
 			newAppTop(COLOR_GREEN, MEDIUM | CENTER, "\nStart with installation?\n");
 		}
 		else {
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nMKWII3DS files detected.");
-			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\n(Unfortunately the installer is not ready atm)");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nMKW3DS files detected. Would you");
+			newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to reinstall the entire mod?\n");
 		}
-		//newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_B": Exit");
 		u32 keys = 0;
 		bool installLoop = true;

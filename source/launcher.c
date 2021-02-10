@@ -9,7 +9,7 @@
 #include "sound.h"
 
 
-static u64 MK7tids[] = { 0x0004000000030600ULL, 0x0004000000030700ULL, 0x0004000000030800ULL };
+static u64 MK7tids[] = { 0x0004000000030600ULL, 0x0004000000030700ULL, 0x0004000000030800ULL }; //these are mario kart 7 title IDs
 static const u64 updtid = 0x0000000E00000000ULL;
 u64 launchAppID = 0;
 FS_MediaType launchAppMedtype = 0xFF;
@@ -70,7 +70,7 @@ void launchPluginLoader(TitleWithUpd_t* tinfo) {
 	u8 isPlgEnabled = 0;
 	plgparam.noFlash = true;
 	plgparam.lowTitleId = (u32)tinfo->game.titleID;
-	strcpy(plgparam.path, "/MKW3DS/resources/mkw3ds.3gx");
+	strcpy(plgparam.path, "/MKW3DS/resources/MKW3DS.3gx"); //TODO: update the .3gx to make it compatible with new boot.firm from pablo.
 	//
 	LaunchSettings_t* launchSettings = (LaunchSettings_t*)&(plgparam.config[0]);
 	switch ((u32)tinfo->game.titleID)
@@ -126,7 +126,7 @@ bool checkPlgLdr() {
 		newAppTop(COLOR_RED, BOLD | MEDIUM | CENTER, "Cannot launch MKW3DS");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nLuma3DS with plugin loader");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "is not installed. Would you");
-		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install it? Info:"); 
+		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "like to install it? Info:");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "pastebin.com/7s5Q3fc4");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, FONT_A": Install  "FONT_B": Exit");
 		while (updatelumaloop && aptMainLoop()) {
@@ -322,7 +322,7 @@ TitleWithUpd_t** getGameArray(MK7GameInfo_t* gameList, bool* gameCard) {
 }
 
 MK7GameInfo_t* getAllPossibleGames() {
-	
+
 	AM_TitleEntry tmpEntry = { 0 };
 	MK7GameInfo_t* gameList = newGameInfo();
 	if (!gameList) return NULL;
@@ -429,7 +429,7 @@ void launchMod() {
 	if (!checkPlgLdr()) {
 		clearTop(false);
 		removeAppTop(false);
-		changeTopFooter(NULL); 
+		changeTopFooter(NULL);
 		appTop->sprite = topInfoSprite;
 		return;
 	}
@@ -508,7 +508,7 @@ void launchMod() {
 			updateProgBar->rectangle->amount = 0;
 			launchControlsSprite->isHidden = false;
 			autoLaunch = false;
-			if (canLaunch) { 
+			if (canLaunch) {
 				PLAYBEEP();
 				saveOptToSave(opts, curropt, gameCard);
 				launchPluginLoader(opts[curropt]);

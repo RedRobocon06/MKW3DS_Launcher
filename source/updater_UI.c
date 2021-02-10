@@ -23,7 +23,7 @@ extern cwav_t                  *sfx_sound;
 extern cwav_t                  *lag_sound;
 
 void    InitUpdatesUI(void)
-{	
+{
 	if (!changelogTextsprite)
 		newSpriteFromPNG(&changelogTextsprite, "romfs:/sprites/textSprites/changelogText.png");
 
@@ -40,7 +40,7 @@ void    InitUpdatesUI(void)
 
 	updateProgBar = newProgressBar(progBarSprite, progBarFillSprite, 95.0f, 194.0f, 210.0f, 36.0f);
 	addTopObject(updateProgBar);
-	updateProgBar->isHidden = true;	
+	updateProgBar->isHidden = true;
 }
 
 void setControlsMode(int mode) {
@@ -192,14 +192,18 @@ void UpdaterMenuLoop() {
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "0x%08X", ret);
 						newAppTopMultiline(DEFAULT_COLOR, SMALL | CENTER, CURL_lastErrorCode);
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nYou can ask for help in the");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server.");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "MKW3DS discord server.");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "If it's a general issue, ask in the"); //reason why i add CTGP-7 is because now that it is closed sourced i'd get some help with pablo in some issues (who knows, maybe both have same issues?)
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server."); //2 lines added, if it goes far from the dialog remove them
 					} else if (ret) {
 						newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Update Failed");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\nThe update failed with");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "the following error code:");
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "\n0x%08X\n", ret);
 						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "You can ask for help in the");
-						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server.");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "MKW3DS discord server.");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "If it's a general issue, ask in the");
+						newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "CTGP-7 discord server."); //2 lines added, if it goes far from the dialog remove them
 					}
 					else {
 						newAppTop(COLOR_GREEN, MEDIUM | BOLD | CENTER, "Update Succeded");
