@@ -17,7 +17,7 @@ LAUNCHER_M = 1
 
 ifeq ($(LAUNCHER_M), 1)
 	NAME := CTGP-7
-else 
+else
 	NAME := CTGP-7_Installer
 endif
 
@@ -59,13 +59,13 @@ RUN_FLAGS :=
 # 3DS/Wii U CONFIGURATION #
 
 ifeq ($(TARGET),$(filter $(TARGET),3DS WIIU))
-	TITLE := CTGP-7
+	TITLE := Mario kart wii 3ds
 	ifeq ($(LAUNCHER_M), 1)
 		DESCRIPTION := Launcher & Updater
-	else 
+	else
 		DESCRIPTION := Installer
 	endif
-    AUTHOR := dshack.org
+    AUTHOR := MKW3DS Team
 endif
 
 # 3DS CONFIGURATION #
@@ -90,14 +90,14 @@ ifeq ($(TARGET),3DS)
 
 	ifeq ($(LAUNCHER_M), 1)
 		ROMFS_DIR := romfs
-	else 
+	else
 		ROMFS_DIR := romfs_installer
 	endif
 
     BANNER_AUDIO := resources/audio.cwav
-    
+
     BANNER_IMAGE := resources/banner.cgfx
-    
+
 	ICON := resources/icon.png
 
 	LOGO := resources/logo.bcma.lz

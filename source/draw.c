@@ -165,7 +165,7 @@ void drawSprite(sprite_t *sprite)
 		bindTexture(texture, sprite->drawColor);
 	}
 
-    //Draw 
+    //Draw
     C3D_DrawArrays(GPU_TRIANGLE_STRIP, arrayIndex, 4);
 }
 
@@ -205,7 +205,7 @@ void drawRectangle(rectangle_t *rectangle)
 	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 	C3D_TexEnvColor(env, 0xFFFFFFFF);
 
-	//Draw 
+	//Draw
 	C3D_DrawArrays(GPU_TRIANGLE_STRIP, arrayIndex, 4);
 }
 
@@ -270,7 +270,7 @@ static void sceneInit(void)
     AttrInfo_Init(attrInfo);
     AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, 3); // v0=position
     AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, 2); // v1=texcoord
-                                                   
+
     // Compute the projection matrix
     Mtx_OrthoTilt(&top.projection, 0.0f, 400.0f, 240.0f, 0.0f, 0.0f, 1.0f, true);
     Mtx_OrthoTilt(&bottom.projection, 0.0f, 320.0f, 240.0f, 0.0f, 0.0f, 1.0f, true);
@@ -279,12 +279,12 @@ static void sceneInit(void)
     C3D_DepthTest(true, GPU_GEQUAL, GPU_WRITE_ALL);
 
     // Load the glyph texture sheets
-    glyphInfo = fontGetGlyphInfo();
+    glyphInfo = fontGetGlyphInfo(NULL);
     glyphSheets = malloc(sizeof(C3D_Tex) * glyphInfo->nSheets);
     for (i = 0; i < glyphInfo->nSheets; i++)
     {
         tex = &glyphSheets[i];
-        tex->data = fontGetGlyphSheetTex(i);
+        tex->data = fontGetGlyphSheetTex(NULL, i);
         tex->fmt = glyphInfo->sheetFmt;
         tex->size = glyphInfo->sheetSize;
         tex->width = glyphInfo->sheetWidth;
@@ -351,7 +351,7 @@ void setTextColor(u32 color)
 {
 #ifndef CITRA
     C3D_TexEnv  *env;
-    
+
     env = C3D_GetTexEnv(0);
     C3D_TexEnvSrc(env, C3D_RGB, GPU_CONSTANT, 0, 0);
     C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_CONSTANT, 0);
@@ -385,7 +385,7 @@ void getTextSizeInfos(float *width, float scaleX, float scaleY, const char *text
         if (code > 0)
         {
             glyphIndex = fontGlyphIndexFromCodePoint(code);
-            fontCalcGlyphPos(&data, glyphIndex, GLYPH_POS_CALC_VTXCOORD, scaleX, scaleY);
+            fontCalcGlyphPos(NULL, &data, glyphIndex, GLYPH_POS_CALC_VTXCOORD, scaleX, scaleY);
             w += data.xAdvance;
         }
     } while (code > 0);
@@ -434,7 +434,7 @@ void renderText(float x, float y, float scaleX, float scaleY, bool baseline, con
     // Configure buffers
     bufInfo = C3D_GetBufInfo();
     BufInfo_Init(bufInfo);
-    BufInfo_Add(bufInfo, textVtxArray, sizeof(textVertex_s), 2, 0x10);  
+    BufInfo_Add(bufInfo, textVtxArray, sizeof(textVertex_s), 2, 0x10);
     firstX = x;
     flags = GLYPH_POS_CALC_VTXCOORD | (baseline ? GLYPH_POS_AT_BASELINE : 0);
     lastSheet = -1;
@@ -449,11 +449,11 @@ void renderText(float x, float y, float scaleX, float scaleY, bool baseline, con
         if (code == '\n')
         {
             x = firstX;
-            y += scaleY * fontGetInfo()->lineFeed;
+            y += scaleY * fontGetInfo(NULL)->lineFeed;
         }
         else if (code > 0)
         {
-            glyphIdx = fontGlyphIndexFromCodePoint(code);
+            glyphIdx = fontGlyphIndexFromCodePoint(NULL, code);
             fontCalcGlyphPos(&data, glyphIdx, flags, scaleX, scaleY);
 
             // Bind the correct texture sheet
@@ -493,7 +493,7 @@ void drawText(screenPos_t pos, float size, u32 color, char *text, ...)
     va_list     vaList;
     float       posX;
     float       posY;
-    
+
     if (!frameStarted) return;
     posX = POS_X(pos);
     posY = POS_Y(pos);
