@@ -754,7 +754,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	if (ciaFile) {
 		amInit();
 		AM_TitleEntry manInfo = { 0 };
-		u64 tid = MKW3DS_TID;
+		u64 tid = CTGP7_TID; //TODO: Replace this with MKW3DS_TID and find the declaration of CTGP7_TID
 		AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &manInfo);
 		if (manInfo.size > 0) {
 			Handle handle;
