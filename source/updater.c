@@ -4,7 +4,8 @@
 #include "json/json.h"
 #include "graphics.h"
 #include "drawableObject.h"
-#include "allocatornewlibHeap.h"
+#include "newlibHeap.h"
+//#include "allocator\newlibHeap.h"
 #include "button.h"
 #include "clock.h"
 #include <malloc.h>
