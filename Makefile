@@ -16,9 +16,9 @@ endif
 LAUNCHER_M = 1
 
 ifeq ($(LAUNCHER_M), 1)
-	NAME := CTGP-7
+	NAME := MKW3DS
 else
-	NAME := CTGP-7_Installer
+	NAME := MKW3DS_Installer
 endif
 
 BUILD_DIR := build
