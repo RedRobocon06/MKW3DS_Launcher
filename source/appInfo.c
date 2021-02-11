@@ -240,7 +240,7 @@ static void getDrawParameters(appInfoObject_t *object, int index, float *sizeX, 
     else if (flags & MEDIUM) scaleX = scaleY = 0.55f;
     else if (flags & SMALL) scaleX = scaleY = 0.45f;
     else if (flags & TINY) scaleX = scaleY = 0.4f;
-    
+
     else scaleX = scaleY = 0.5f;
 
     //Set the type
@@ -266,8 +266,8 @@ static void getDrawParameters(appInfoObject_t *object, int index, float *sizeX, 
     }
 
     if (flags & NEWLINE)
-        cursor->posY += 0.3f * fontGetInfo()->lineFeed;
-    
+        cursor->posY += 0.3f * fontGetInfo(NULL, )->lineFeed;
+
     //Return the size
     *sizeX = scaleX;
     *sizeY = scaleY;
@@ -285,7 +285,7 @@ void    drawAppInfoEntry(appInfoObject_t  *object, int index)
     cursor = &object->cursor;
     sizeX = sizeY = 0.0f;
     getDrawParameters(object, index, &sizeX, &sizeY);
-    lineFeed = sizeY * fontGetInfo()->lineFeed;
+    lineFeed = sizeY * fontGetInfo(NULL, )->lineFeed;
     setTextColor(entry->color);
     renderText(cursor->posX, cursor->posY, sizeX, sizeY, false, entry->buffer, cursor, 0.0f);
     cursor->posY += lineFeed;
