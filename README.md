@@ -6,10 +6,10 @@ Since the v1.0, the CTGP7 launcher became closed source due to code containing a
 
 # Building
 Building MKW3DS Launcher is handled through buildtools. You have to have the following installed:
-- [devkitPro with devkitARM](https://sourceforge.net/projects/devkitpro/files/Automated%20Installer/)
+- [devkitPro with devkitARM](https://github.com/devkitPro/installer/releases)
 - ctrulib (installed automatically with the devkitARM script)
-- [citro3d](https://github.com/fincs/citro3d)
-- [portlibs](https://github.com/devkitPro/3ds_portlibs)
+**for a step to step build guide open Building_steps.md**
+
 
 Once you have installed all the dependencies simply run `make` in the BootNTR directory and if you set it all up correctly it should build.
 
