@@ -12,7 +12,7 @@ void    appInfoDisableAutoUpdate(void)
 
 void    appInfoEnableAutoUpdate(void)
 {
-    autoUpdate = true;
+    autoUpdate = false; //for now i don't want to autoupdate
 }
 
 void    appInfoHideBackground(void)

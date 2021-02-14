@@ -385,7 +385,7 @@ void getTextSizeInfos(float *width, float scaleX, float scaleY, const char *text
         if (code > 0)
         {
             glyphIndex = fontGlyphIndexFromCodePoint(NULL, code);
-            fontCalcGlyphPos(NULL, &data, glyphIndex, GLYPH_POS_CALC_VTXCOORD, scaleX, scaleY);
+            fontCalcGlyphPos(&data, NULL, glyphIndex, GLYPH_POS_CALC_VTXCOORD, scaleX, scaleY);
             w += data.xAdvance;
         }
     } while (code > 0);
@@ -454,7 +454,7 @@ void renderText(float x, float y, float scaleX, float scaleY, bool baseline, con
         else if (code > 0)
         {
             glyphIdx = fontGlyphIndexFromCodePoint(NULL, code);
-            fontCalcGlyphPos(NULL, &data, glyphIdx, flags, scaleX, scaleY);
+            fontCalcGlyphPos(&data, NULL, glyphIdx, flags, scaleX, scaleY);
 
             // Bind the correct texture sheet
             if (data.sheetIndex != lastSheet)

@@ -310,7 +310,7 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, FILE_ALLOC_SIZE);
 	curl_easy_setopt(hnd, CURLOPT_URL, URL);
 	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 0L);
-	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) MKW3DS/1.0 MKW3DS/1.0");
+	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(hnd, CURLOPT_ACCEPT_ENCODING, "gzip");
@@ -407,7 +407,7 @@ int downloadString(char* URL, char** out) {
 	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, 102400L);
 	curl_easy_setopt(hnd, CURLOPT_URL, URL);
 	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
-	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) MKW3DS/1.0 MKW3DS/1.0");
+	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_ACCEPT_ENCODING, "gzip");
 	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
@@ -754,7 +754,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	if (ciaFile) {
 		amInit();
 		AM_TitleEntry manInfo = { 0 };
-		u64 tid = CTGP7_TID; //TODO: Replace this with MKW3DS_TID and find the declaration of CTGP7_TID
+		u64 tid = MKW3DS_TID; //TODO: Replace this with MKW3DS_TID and find the declaration of CTGP7_TID
 		AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &manInfo);
 		if (manInfo.size > 0) {
 			Handle handle;

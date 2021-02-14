@@ -74,8 +74,8 @@ ifeq ($(TARGET),3DS)
     LIBRARY_DIRS += $(DEVKITPRO)/libctru $(DEVKITPRO)/portlibs/3ds/
     LIBRARIES += citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
 
-    PRODUCT_CODE := CTR-P-CTGP
-    UNIQUE_ID := 0x3070C
+    PRODUCT_CODE := CTR-P-MKWI
+    UNIQUE_ID := 0x3085C
 
     CATEGORY := Application
     USE_ON_SD := true

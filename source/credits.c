@@ -15,7 +15,7 @@ extern sprite_t         *topInfoSprite;
 
 char* tryDownloadCredits() {
 	char* ret = NULL;
-	downloadString("DISABLED", &ret); //Add the correct URL (mkw3ds updates/master/credits.txt)
+	downloadString("https://raw.githubusercontent.com/Midou36O/MKW3DS-updates/master/credits.txt", &ret);
 	return ret;
 }
 

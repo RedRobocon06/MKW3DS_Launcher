@@ -69,7 +69,7 @@ int zipCallBack(u32 curr, u32 total) {
 	if (Timer_HasTimePassed(10, timer)) {
 		timer = Timer_Restart();
 		clearTop(false);
-		newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
+		newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
 		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\nExtracting files\n");
 		newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", curr, total);
 		PLAYCLICK();
@@ -83,17 +83,17 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 	appTop->sprite = topInfoSpriteUpd;
 	STARTLAG();
 	clearTop(false);
-	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
+	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Preparing to install");
 	updateUI();
-	if (existsDirectory("/CTGP-7/savefs")) {
-		if (renameDir("/CTGP-7/savefs", "/CTGP-7savebak")) {
+	if (existsDirectory("/MKW3DS/savefs")) {
+		if (renameDir("/MKW3DS/savefs", "/MWK3DSsavebak")) {
 			STOPLAG();
 			return 15;
 		}
 	}
-	deleteDirectory("/CTGP-7");
-	deleteDirectory("/CTGP-7tmp");
+	deleteDirectory("/MKW3DS");
+	deleteDirectory("/MKW3DStmp");
 	u64 freeBytes = 0;
 	Result ret = getFreeSpace(&freeBytes);
 	if (ret < 0) {
@@ -104,19 +104,19 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 		STOPLAG();
 		return 2 | ((u64)(((zipsize + 100000000) - freeBytes) / 1000000) << 32);
 	}
-	ret = mkdir("/CTGP-7tmp", 777);
+	ret = mkdir("/MKW3DStmp", 777);
 	if (ret != 0) {
 		STOPLAG();
 		return 3 | ((u64)ret << 32);
 	}
-	Zip* modZip = ZipOpen("romfs:/CTGP-7.zip");
+	Zip* modZip = ZipOpen("romfs:/MKW3DS.zip");
 	if (modZip == NULL) {
 		STOPLAG();
 		return 14;
 	}
-	chdir("/CTGP-7tmp");
+	chdir("/MKW3DStmp");
 	clearTop(false);
-	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
+	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\nExtracting files");
 	updateUI();
 	progbar->rectangle->amount = 0;
@@ -127,25 +127,25 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 	progbar->isHidden = true;
 	STARTLAG();
 	clearTop(false);
-	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
+	newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\nFinishing installation.");
 	updateUI();
 	FILE* vercheck = NULL;
-	vercheck = fopen("/CTGP-7tmp/installerver.bin", "rb");
+	vercheck = fopen("/MKW3DStmp/installerver.bin", "rb");
 	if (!vercheck) {
 		STOPLAG();
-		deleteDirectory("/CTGP-7tmp");
+		deleteDirectory("/MKW3DStmp");
 		return 12;
 	}
 	fread(verRead, 1, 3, vercheck);
 	fclose(vercheck);
 	if (strcmp(EXPECTED_INSTALLER_VER, verRead) != 0) {
 		STOPLAG();
-		deleteDirectory("/CTGP-7tmp");
+		deleteDirectory("/MKW3DStmp");
 		return 13;
 	}
-	ret = renameDir("/CTGP-7tmp/files/CTGP-7", "/CTGP-7");
-	deleteDirectory("/CTGP-7tmp");
+	ret = renameDir("/MKW3DStmp/files/MKW3DS", "/MKW3DS");
+	deleteDirectory("/MKW3DStmp");
 	if (ret < 0) {
 		STOPLAG();
 		return 4 | ((u64)ret << 32);
@@ -155,7 +155,7 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 	if (ciaFile) {
 		amInit();
 		AM_TitleEntry manInfo = { 0 };
-		u64 tid = CTGP7_TID;
+		u64 tid = MKW3DS_TID;
 		AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &manInfo);
 		if (manInfo.size > 0) {
 			Handle handle;
@@ -203,7 +203,7 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 					timer1 = Timer_Restart();
 					speed = ((float)(filePos - oldprog)) / ((float)delaymsec);
 					clearTop(false);
-					newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
+					newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
 					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\nInstalling App");
 					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\n%s / %s", getProgText(filePos, 0), getProgText(fileSize, 1));
 					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
@@ -213,7 +213,7 @@ u64 installMod(progressbar_t* progbar, u64 zipsize) {
 			}
 			progbar->rectangle->amount = 1;
 			clearTop(false);
-			newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing CTGP-7");
+			newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, "Installing MKW3DS");
 			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\nInstalling App");
 			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\n%s / %s", getProgText(filePos, 0), getProgText(fileSize, 1));
 			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);

@@ -60,7 +60,7 @@ typedef uint8_t   u8;
 #define LAUNCH_OPT_SAVE "/MKW3DS/config/launchopt.bin"
 #define PLGLDR_TMP "/MKW3DS/tempboot.firm"
 #define PLGLDR_URL "https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/luma/boot.firm" //This doesn't need to be edited, as it fetches latest update.
-#define CTGP7_TID (0x0004000003070C00ULL) //TODO: Rename this!!!!! (or else it will replace CTGP7 app)
+#define MKW3DS_TID (0x0004000003070C00ULL) //TODO: Rename this!!!!! (or else it will replace CTGP7 app)
 
 typedef struct  updateData_s
 {
