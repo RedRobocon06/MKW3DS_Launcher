@@ -250,6 +250,8 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+*.old
+*.bak
 
 #3DS
 *.elf
@@ -257,4 +259,4 @@ ModelManifest.xml
 *.3dsx
 *.map
 output/
-romfs_installer/
+romfs_inst/

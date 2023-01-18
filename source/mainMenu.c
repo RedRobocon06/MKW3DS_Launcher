@@ -145,7 +145,7 @@ int     mainMenu(void)
 		}
 		if (keys & (KEY_CPAD_UP | KEY_CPAD_DOWN | KEY_DUP | KEY_DDOWN)) {
 			if (Timer_HasTimePassed(250, timer2)) {
-				PLAYBEEP();
+				PLAYCLICK();
 				timer2 = Timer_Restart();
 				V32Button->isSelected = !V32Button->isSelected;
 				V33Button->isSelected = !V33Button->isSelected;
@@ -213,6 +213,6 @@ int     mainMenu(void)
     }
 	greyExit();
 	updateUI();
-	svcSleepThread(500000000);
+	svcSleepThread(250000000);
 	return (1);
 }

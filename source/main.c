@@ -5,18 +5,18 @@
 #include "Unicode.h"
 #include "sound.h"
 
-u8                *tmpBuffer;
-char              *g_primary_error = NULL;
-char              *g_secondary_error = NULL;
-char              *g_third_error = NULL;
-bool              g_exit = false;
-bool			  forceUpdate;
-bool			  restartneeded = false;
-char			  g_modversion[15] = { '\0' };
-u8				  g_launcherversion[3] = { '\0' };
-u8				  hmac[0x20];
-extern sprite_t*  updaterControlsText;
-extern char*      versionList[100];
+u8   *tmpBuffer;
+char *g_primary_error = NULL;
+char *g_secondary_error = NULL;
+char *g_third_error = NULL;
+bool g_exit = false;
+bool forceUpdate;
+bool restartneeded = false;
+char g_modversion[15] = { '\0' };
+u8   g_launcherversion[3] = { '\0' };
+u8   hmac[0x20];
+extern sprite_t* updaterControlsText;
+extern char* versionList[100];
 extern char textVersion[20];
 extern u64 launchAppID;
 extern FS_MediaType launchAppMedtype;
@@ -127,11 +127,10 @@ bool isExpectedVersion() {
 
 int mainLauncher(void)
 {
-    //u32         kernelVersion;
-
     gfxInitDefault();
     romfsInit();
     ptmSysmInit();
+    cfguInit();
 	acInit();
 	csndInit();
 	FSUSER_SetPriority(-16);
@@ -199,7 +198,7 @@ int mainLauncher(void)
 		}
 		greyExit();
 		updateUI();
-		svcSleepThread(500000000);
+		svcSleepThread(250000000);
 	}
 	else {
 		newAppTop(DEFAULT_COLOR, BOLD | MEDIUM | CENTER, "Checking for updates...");
@@ -219,6 +218,7 @@ int mainLauncher(void)
 
     acExit();
     amExit();
+    cfguExit();
 	csndExit();
     httpcExit();
     romfsExit();
@@ -234,32 +234,24 @@ int mainLauncher(void)
 
 int mainInstaller(void)
 {
-	//u32         kernelVersion;
-
 	gfxInitDefault();
-	romfsInit();
-	ptmSysmInit();
+    romfsInit();
+    ptmSysmInit();
+    cfguInit();
 	acInit();
 	csndInit();
+	FSUSER_SetPriority(-16);
 	drawInit();
 	aptHook(&aptCookie, mainAptHook, NULL);
 
 	getModVersion();
-	initUI();
+    initUI();
 	InitUpdatesUI();
 	changeTopSprite(2);
-	FILE* zipFile = NULL;
-	u64 zipSize = 0;
 	bool continueInstall = true;
-	zipFile = fopen("romfs:/MKW3DS.zip", "rb");
-	if (zipFile) {
-		fseek(zipFile, 0, SEEK_END);
-		zipSize = ftell(zipFile);
-		fclose(zipFile);
-	}
+	
 	clearTop(false);
 	if (g_modversion[0]) {
-		clearTop(false);
 		newAppTop(COLOR_ORANGE, MEDIUM | BOLD | CENTER, "WARNING");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Did you install the MKW3DS");
 		newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "installer by mistake?\n");
@@ -310,7 +302,7 @@ int mainInstaller(void)
 			if ((keys & KEY_A)) {
 				g_modversion[0] = '\0';
 				PLAYBEEP();
-				u64 ret = installMod(updateProgBar, zipSize);
+				u64 ret = performInstall(updateProgBar);
 				appTop->sprite = topInfoSprite;
 				u32 retlow = (u32)ret;
 				u32 rethigh = (u32)(ret >> 32);
@@ -365,7 +357,7 @@ int mainInstaller(void)
 	}
 	greyExit();
 	updateUI();
-	svcSleepThread(500000000);
+	svcSleepThread(250000000);
 
 	drawEndFrame();
 	exitMainMenu();
@@ -374,6 +366,7 @@ int mainInstaller(void)
 	aptUnhook(&aptCookie);
 	acExit();
 	amExit();
+	cfguExit();
 	csndExit();
 	httpcExit();
 	romfsExit();

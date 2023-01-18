@@ -102,6 +102,7 @@ static inline void drawUITop(void)
 		if (textVersion[0] == '\0') {
 			sprintf(textVersion, "Ver. %s", g_modversion);
 		}
+		setTextColor(DEFAULT_COLOR);
 		renderText(1.0f, 1.0f, 0.4f, 0.45f, false, textVersion, NULL, 0.0f);
 	}
     drawAppInfo(appTop);

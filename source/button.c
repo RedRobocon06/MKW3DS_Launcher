@@ -154,7 +154,7 @@ bool    drawAndExecuteButton(void *button)
 					buttonList[i]->isSelected = false;
 				}
 			}
-			PLAYBEEP();
+			PLAYCLICK();
 			((button_t *)button)->isSelected = true;
 			return false;
 		}

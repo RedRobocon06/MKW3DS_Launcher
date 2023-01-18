@@ -51,16 +51,24 @@ typedef uint8_t   u8;
 #define NTR_ALREADY_LAUNCHED        (char *)s_error[18]
 
 #define DEFAULT_MOD_PATH "/MKW3DS"
-#define FILE_DOWN_PREFIX "https://github.com/mariohackandglitch/CTGP-7updates/raw/master/updates/data" //TODO: replace this
+#define FILE_DOWN_PREFIX "https://github.com/MKW3DS/MKW3DS-updates/raw/master/updates/data"
+#define FULLMOD_DOWNLOAD_URL_CIA "https://ctgp7.page.link/cia_install"
+#define FULLMOD_DOWNLOAD_URL_3DSX  "https://ctgp7.page.link/3dsx_install"
+#define FULLMOD_DOWNLOAD_FINAL_CIA "/MKW3DStmp/MKW3DS_Installer.cia"
+#define FULLMOD_DOWNLOAD_FINAL_3DSX  "/MKW3DStmp/MKW3DS_Installer.3dsx"
+
 #define TOINSTALL_CIA_PATH "/MKW3DS/cia/tooInstall.cia"
 #define TOINSTALL_3DSX_PATH "/MKW3DS/cia/tooInstall.3dsx"
 #define FINAL_CIA_PATH "/MKW3DS/cia/MKW3DS.cia"
 #define TEMPORAL_3DSX_PATH "/MKW3DS/cia/MKW3DS.3dsx"
 #define FINAL_3DSX_PATH "/3ds/MKW3DS/MKW3DS.3dsx"
+#define FINAL_3DSX_INSTALLER_PATH "/3ds/MKW3DS/MKW3DS_Installer.3dsx"
 #define LAUNCH_OPT_SAVE "/MKW3DS/config/launchopt.bin"
 #define PLGLDR_TMP "/MKW3DS/tempboot.firm"
-#define PLGLDR_URL "https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/luma/boot.firm" //This doesn't need to be edited, as it fetches latest update.
-#define MKW3DS_TID (0x0004000003070C00ULL) //TODO: Rename this!!!!! (or else it will replace CTGP7 app)
+#define PLGLDR_URL "https://raw.githubusercontent.com/MKW3DS/MKW3DS-updates/master/luma/boot.firm"
+#define PLGLDR_PATH "romfs:/boot.firm"
+#define MKW3DS_TID (0x0004000003070C00ULL)
+#define CIA_ALREADY_EXISTS 0xC8E083FC
 
 typedef struct  updateData_s
 {
@@ -127,18 +135,6 @@ void    waitAllKeysReleased(void);
 void    wait(int seconds);
 void    debug(char *str, int seconds);
 void customBreak(u32 r0, u32 r1, u32 r2, u32 r3);
-/*
-** ntr_launcher.c
-*/
-Result      bnPatchAccessCheck(void);
-Result      bnLoadAndExecuteNTR(void);
-Result      bnBootNTR(void);
-void        launchNTRDumpMode(void);
-
-/*
-** pathPatcher.c
-*/
-Result        loadAndPatch(version_t version);
 
 /*
 ** memory_functions.c
@@ -154,7 +150,7 @@ u32     findNearestSTMFD(u32 base, u32 pos);
 u32     searchBytes(u32 startAddr, u32 endAddr, u8* pat, int patlen, int step);
 
 /*
-** firmware.c
+** firmware.c   
 */
 Result  bnInitParamsByFirmware(void);
 
@@ -182,6 +178,9 @@ char*	getProgText(float prog, int index);
 int		performUpdate(progressbar_t* progbar, bool* restartNeeded);
 FILE* fopen_mkdir(const char* name, const char* mode);
 void setControlsMode(int mode);
+void perform3dsxUpdate();
+int downloadModFromInternet(progressbar_t* progbar, bool get3dsx);
+u64 performInstall(progressbar_t* progbar);
 
 /*
 ** updater_UI.c
@@ -195,10 +194,6 @@ void    InitUpdatesUI(void);
 ** launcher.c
 */
 void launchMod();
-/*
-** installer.c
-*/
-u64 installMod(progressbar_t* progbar, u64 zipSize);
 /*
 **credits.c
 */

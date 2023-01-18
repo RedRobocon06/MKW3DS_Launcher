@@ -5,7 +5,7 @@
 
 #define MAX_ENTRIES     10
 #define BUFFER_SIZE     100
-#define DEFAULT_COLOR   0xFFFFFFFF
+#define DEFAULT_COLOR   0xFF000000
 #define RED             0xFFFF0000
 #define GREEN           0xFF00FF00
 

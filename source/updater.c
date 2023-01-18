@@ -5,7 +5,6 @@
 #include "graphics.h"
 #include "drawableObject.h"
 #include "allocator/newlibHeap.h"
-//#include "allocator\newlibHeap.h"
 #include "button.h"
 #include "clock.h"
 #include <malloc.h>
@@ -35,8 +34,9 @@ FILE *downfile = NULL;
 char progTextBuf[2][20];
 
 char* versionList[50] = { NULL };
+int lastVerIdx;
 extern char g_modversion[15];
-char* changelogList[50][30] = { NULL };
+char* changelogList[200][30] = { NULL };
 
 extern cwav_t                  *sfx_sound;
 extern cwav_t				   *lag_sound;
@@ -79,11 +79,11 @@ void    EnableSleep(void)
 
 char* getProgText(float prog, int index) {
 	if (prog < (1024 * 1024)) {
-		sprintf(progTextBuf[index], "%.2f KB", prog / 1024);
+		sprintf(progTextBuf[index], "%.2f KiB", prog / 1024);
 		return progTextBuf[index];
 	}
 	else {
-		sprintf(progTextBuf[index], "%.2f MB", prog / (1024 * 1024));
+		sprintf(progTextBuf[index], "%.2f MiB", prog / (1024 * 1024));
 		return progTextBuf[index];
 	}
 }
@@ -94,7 +94,7 @@ void updateTop(curl_off_t dlnow, curl_off_t dltot, float speed) {
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Downloading Files");
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%d / %d", fileDownCnt, totFileDownCnt);
 	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n%s / %s", getProgText(dlnow, 0), getProgText(dltot, 1));
-	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s\n", speed);
+	newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KiB/s\n", speed);
 	if (updatingFile) newAppTopMultiline(DEFAULT_COLOR, CENTER | SMALL, updatingFile);
 }
 
@@ -310,7 +310,7 @@ int downloadFile(char* URL, char* filepath, progressbar_t* progbar) {
 	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, FILE_ALLOC_SIZE);
 	curl_easy_setopt(hnd, CURLOPT_URL, URL);
 	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 0L);
-	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
+	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) MKW3DS/1.0 MKW3DS/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
 	curl_easy_setopt(hnd, CURLOPT_ACCEPT_ENCODING, "gzip");
@@ -407,7 +407,7 @@ int downloadString(char* URL, char** out) {
 	curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, 102400L);
 	curl_easy_setopt(hnd, CURLOPT_URL, URL);
 	curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
-	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) CTGP-7/1.0 CTGP-7/1.0");
+	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "Mozilla/5.0 (Nintendo 3DS; U; ; en) AppleWebKit/536.30 (KHTML, like Gecko) MKW3DS/1.0 MKW3DS/1.0");
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_ACCEPT_ENCODING, "gzip");
 	curl_easy_setopt(hnd, CURLOPT_FAILONERROR, 1L);
@@ -449,19 +449,17 @@ exit:
 
 bool downloadChangelog() {
 	if (!isWifiAvailable()) return false;
-	STARTLAG();
 	char* downstr;
 	char *token;
 	char *end_str;
 	int index1 = 0;
 	int index2 = 0;
 
-	int retcode = downloadString("https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/updates/changeloglist", &downstr); //TODO: add the mario kart wii 3ds changeloglist (new one.)
+	int retcode = downloadString("https://raw.githubusercontent.com/MKW3DS/MKW3DS-updates/master/updates/changeloglist", &downstr);
 	if (retcode || downstr == NULL) {
 		if (downstr) {
 			free(downstr);
 		}
-		STOPLAG();
 		return false;
 	}
 	token = strtok_r(downstr, ";", &end_str);
@@ -487,14 +485,18 @@ bool downloadChangelog() {
 		index2 = 0;
 	}
 	free(downstr);
-	STOPLAG();
+	lastVerIdx = index1 - 1;
 	return true;
 }
 
 bool updateAvailable() {
 	if (!isWifiAvailable()) return false;
 	char* downstr = NULL;
-	int retcode = downloadString("http://bit.ly/ctgp7_latest", &downstr); //NOTE: this is the actual link without bit.ly, to change later: https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/updates/latestver
+	int retcode = downloadString("https://raw.githubusercontent.com/MKW3DS/MKW3DS-updates/master/updates/latestver", &downstr);;
+	
+	/* Edited by CyberYoshi64 - It's a mess, I'll tell ya that lmao. */
+	
+	//downloadString("http://bit.ly/ctgp7_latest", &downstr); //NOTE: this is the actual link without bit.ly, to change later: https://raw.githubusercontent.com/mariohackandglitch/CTGP-7updates/master/updates/latestver
 	//NOTE: bit.ly is used to know how many people use the mod and from which country they are. This data helps MKW3DS devs to know the most used languages, the amount of people playing, etc.. This data is not shared with anyone and is anonymus (IPs not registered), but right now, it will disabled as we don't need it.
 	if (retcode || downstr == NULL) {
 		if (downstr) {
@@ -620,7 +622,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		char* downstr = NULL;
 		if (!URL) URL = malloc(200);
 		int filecount = 0;
-		sprintf(URL, "https://github.com/mariohackandglitch/CTGP-7updates/releases/download/v%s/filelist.txt", versionList[index]); //TODO: replace that.
+		sprintf(URL, "https://github.com/MKW3DS/MKW3DS-updates/releases/download/v%s/filelist.txt", versionList[index]);
 		int retcode = downloadString(URL, &downstr);
 
 		if (retcode || downstr == NULL) {
@@ -750,11 +752,11 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 	}
 	freeFileInfo(downfileinfo);
 	downfileinfo = NULL;
-	ciaFile = fopen(TOINSTALL_CIA_PATH, "rb"); //rb means readbinary?
+	ciaFile = fopen(TOINSTALL_CIA_PATH, "rb");
 	if (ciaFile) {
 		amInit();
 		AM_TitleEntry manInfo = { 0 };
-		u64 tid = MKW3DS_TID; //TODO: Replace this with MKW3DS_TID and find the declaration of CTGP7_TID
+		u64 tid = MKW3DS_TID; //see main.h
 		AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &manInfo);
 		if (manInfo.size > 0) {
 			Handle handle;
@@ -831,10 +833,10 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		remove(FINAL_CIA_PATH);
 		rename(TOINSTALL_CIA_PATH, FINAL_CIA_PATH);
 	}
-	brewFile = fopen(TOINSTALL_3DSX_PATH, "rb");  //r is used to open text files (read), rb is used to open non-text files (read binary?)
+	brewFile = fopen(TOINSTALL_3DSX_PATH, "rb");
 	if (brewFile) {
 		fclose(brewFile);
-		FILE* endBrewFile = fopen_mkdir(FINAL_3DSX_PATH, "w"); // Generate path
+		FILE* endBrewFile = fopen_mkdir(FINAL_3DSX_PATH, "w");
 		if (!endBrewFile) {
 			EnableSleep();
 			return 6;
@@ -848,8 +850,276 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		rename(TOINSTALL_3DSX_PATH, FINAL_3DSX_PATH);
 		*restartNeeded = true;
 	}
-	FILE* file = fopen("/MKW3DS/config/version.bin", "w"); //w is write
+	FILE* file = fopen("/MKW3DS/config/version.bin", "w");
 	fwrite(versionList[index - 1], 1, strlen(versionList[index - 1]), file);
+	fclose(file);
+	progbar->isHidden = true;
+	EnableSleep();
+	return 0;
+}
+
+u64 performInstall(progressbar_t* progbar) {
+	DisableSleep();
+	int index = -1;
+	clearTop(false);
+	newAppTop(DEFAULT_COLOR, MEDIUM | BOLD | CENTER, "Fetching Install Info");
+	newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Please wait...");
+	updateUI();
+	if (!downloadChangelog()) return 2;
+	index++;
+	char*  URL = NULL;
+	char *end_str;
+	char* token;
+	FS_Archive sdarc;
+	u64 bytFree;
+	FILE* ciaFile = NULL;
+	FILE* brewFile = NULL;
+	downFileInfo_t** downfileinfo = NULL;
+	int downfileinfocnt = 0;
+	totFileDownCnt = 0;
+	fileDownCnt = 0;
+	FSUSER_GetFreeBytes(&bytFree, sdarc);
+	FSUSER_CloseArchive(sdarc);
+	remove(TOINSTALL_CIA_PATH);
+	STARTLAG();
+	if (!isWifiAvailable()) {
+		freeFileInfo(downfileinfo);
+		EnableSleep();
+		return 2;
+	}
+	char* downstr = NULL;
+	if (!URL) URL = malloc(200);
+	int filecount = 0;
+	sprintf(URL, "https://raw.githubusercontent.com/MKW3DS/MKW3DS-updates/master/updates/installinfo.txt");
+	int retcode = downloadString(URL, &downstr);
+
+	if (retcode || downstr == NULL) {
+		if (downstr) {
+			free(downstr);
+		}
+		writeFaultyURL(URL);
+		freeFileInfo(downfileinfo);
+		EnableSleep();
+		return 3 | (retcode << 8);
+	}
+	free(URL); URL = NULL;
+	for (int i = 0; downstr[i]; i++) if (downstr[i] == '\n') filecount++;
+	if (filecount < 4) return 4;
+	if (!downfileinfo) {
+		downfileinfo = malloc((filecount) * 4);
+	}
+	else {
+		downfileinfo = realloc(downfileinfo, (downfileinfocnt + filecount) * 4);
+	}
+	if (!downfileinfo) {
+		EnableSleep();
+		return 4;
+	}
+	int index1 = 0;
+	for (int i = 0; i < filecount; i++) downfileinfo[i + downfileinfocnt] = createNewFileInfo(index);
+	token = strtok_r(downstr, "\n", &end_str);
+	while (token != NULL && index1 < filecount)
+	{
+		downfileinfo[index1 + downfileinfocnt]->mode = token[0];
+		downfileinfo[index1 + downfileinfocnt]->fileName = malloc(strlen(&token[1]) + 1);
+		strcpy(downfileinfo[index1 + downfileinfocnt]->fileName, &token[1]);
+		index1++;
+		token = strtok_r(NULL, "\n", &end_str);
+	}
+	downfileinfocnt += filecount;
+	index++;
+	free(downstr);
+	sprintf(updatingVer, "Installing v%s", versionList[index - 1]);
+	downfileinfo = realloc(downfileinfo, (downfileinfocnt + 1) * 4);
+	if (!downfileinfo) svcBreak((UserBreakType)0);
+	downfileinfo[downfileinfocnt] = NULL;
+	STOPLAG();
+	for (int i = 0; downfileinfo[i]; i++) {
+		downFileInfo_t* src = downfileinfo[i];
+		fileNameTrim(src->fileName);
+		if (!(src->mode == 'M')) continue;
+		if (src->mode == 'S') {
+			if (atoi(src->fileName) >= bytFree) return 2|((atoi(src->fileName)-bytFree)<<32);
+		}
+		for (int j = 0; downfileinfo[j]; j++) {
+			downFileInfo_t* dst = downfileinfo[j];
+			if (dst->mode == 'I' || dst->mode == 'F' || dst->mode == 'T') continue;
+			if (src->updateIndex < dst->updateIndex && strcmp(src->fileName, dst->fileName) == 0) {
+				src->mode = 'I';
+				break;
+			}
+		}
+		if (src->mode == 'M') totFileDownCnt++;
+	}
+	clearTop(false);
+	fileDownCnt = 1;
+	for (int i = 0; downfileinfo[i]; i++) {
+		char* tmpbuf1 = NULL;
+		char* tmpbuf2 = NULL;
+		if (downfileinfo[i]->mode == 'F') {
+			if (downfileinfo[i + 1] && downfileinfo[i + 1]->mode == 'T') {
+				tmpbuf1 = concat(DEFAULT_MOD_PATH, downfileinfo[i]->fileName);
+				tmpbuf2 = concat(DEFAULT_MOD_PATH, downfileinfo[i+1]->fileName);
+				FILE* dst = fopen(tmpbuf2, "r");
+				if (dst) {
+					fclose(dst);
+				}
+				else {
+					remove(tmpbuf2);
+					rename(tmpbuf1, tmpbuf2);
+				}
+			}
+		}
+		else if (downfileinfo[i]->mode == 'D') {
+			tmpbuf1 = concat(DEFAULT_MOD_PATH, downfileinfo[i]->fileName);
+			remove(tmpbuf1);
+		}
+		else if (downfileinfo[i]->mode == 'M') {
+			PLAYCLICK();
+			tmpbuf1 = concat(FILE_DOWN_PREFIX, downfileinfo[i]->fileName);
+			tmpbuf2 = concat(DEFAULT_MOD_PATH, downfileinfo[i]->fileName);
+			progbar->isHidden = false;
+			progbar->rectangle->amount = 0;
+			int ret = downloadFile(tmpbuf1, tmpbuf2, progbar);
+			if (ret) {
+				bool errorloop = true;
+				u32 keys = 0;
+				progbar->isHidden = true;
+				clearTop(false);
+				PLAYBOOP();
+				newAppTop(COLOR_RED, MEDIUM | BOLD | CENTER, "Download Failed");
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Error downloading file %d", fileDownCnt);
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, "Err: 0x%08X", 5 | (ret << 8));
+				newAppTopMultiline(DEFAULT_COLOR, SMALL | CENTER, CURL_lastErrorCode);
+				newAppTop(DEFAULT_COLOR, MEDIUM | CENTER, ""FONT_A": Retry       "FONT_B": Exit");
+				while (errorloop) {
+					if (keys & KEY_A) {
+						PLAYBEEP();
+						errorloop = false;
+						i--;
+						//totFileDownCnt--; //oops wrong
+						fileDownCnt--;
+					}
+					if (keys & KEY_B) {
+						freeFileInfo(downfileinfo);
+						writeFaultyURL(tmpbuf1);
+						EnableSleep();
+						return 5 | (ret << 8);
+					}
+					updateUI();
+					keys = hidKeysDown();
+				}
+				progbar->isHidden = false;
+			}
+			fileDownCnt++;
+		}
+		if (tmpbuf1) {
+			free(tmpbuf1); tmpbuf1 = NULL;
+		}
+		if (tmpbuf2) {
+			free(tmpbuf2); tmpbuf2 = NULL;
+		}
+	}
+	freeFileInfo(downfileinfo);
+	downfileinfo = NULL;
+	ciaFile = fopen(TOINSTALL_CIA_PATH, "rb");
+	if (ciaFile) {
+		amInit();
+		AM_TitleEntry manInfo = { 0 };
+		u64 tid = MKW3DS_TID; //see main.h
+		AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &manInfo);
+		if (manInfo.size > 0) {
+			Handle handle;
+			Result ret = 0;
+			ret = AM_StartCiaInstall(MEDIATYPE_SD, &handle);
+			if (ret < 0) {
+				EnableSleep();
+				return ret;
+			}
+			fseek(ciaFile, 0L, SEEK_END);
+			u32 fileSize = ftell(ciaFile);
+			u32 filePos = 0;
+			u32 chunk_sz = 0x60000;
+			u8* tmpbuf = memalign(0x1000, chunk_sz);
+			u32 singlePixel = fileSize / (progbar->rectangle->width);
+			u32 oldprog = 0;
+			u64 timer1 = Timer_Restart();
+			u64 timer2 = Timer_Restart();
+			progbar->isHidden = false;
+			progbar->rectangle->amount = 0;
+			float speed = 0;
+			while (filePos < fileSize) {
+				if (filePos + chunk_sz >= fileSize) {
+					chunk_sz = fileSize - filePos;
+				}
+				u32 bytesWritten = 0;
+				fseek(ciaFile, filePos, SEEK_SET);
+				fread(tmpbuf, 1, chunk_sz, ciaFile);
+				ret = FSFILE_Write(handle, &bytesWritten, filePos, tmpbuf, chunk_sz, 0);
+				if (ret < 0) {
+					free(tmpbuf);
+					fclose(ciaFile);
+					AM_CancelCIAInstall(handle);
+					amExit();
+					EnableSleep();
+					return ret;
+				}
+				filePos += bytesWritten;
+				clearTop(false);
+				if (filePos - oldprog > singlePixel) {
+					clearTop(false);
+					progbar->rectangle->amount = ((float)filePos) / ((float)fileSize);
+					timer2 = Timer_Restart();
+					u32 delaymsec = getTimeInMsec(timer2) - getTimeInMsec(timer1);
+					timer1 = Timer_Restart();
+					speed = ((float)(filePos - oldprog)) / ((float)delaymsec);
+					clearTop(false);
+					newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, updatingVer);
+					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Installing App");
+					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\n%s / %s", getProgText(filePos, 0), getProgText(fileSize, 1));
+					newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
+					updateUI();
+					oldprog = filePos;
+				}
+			}
+			progbar->rectangle->amount = 1;
+			clearTop(false);
+			newAppTop(DEFAULT_COLOR, CENTER | BOLD | MEDIUM, updatingVer);
+			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "Installing App");
+			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "\n\n%s / %s", getProgText(filePos, 0), getProgText(fileSize, 1));
+			newAppTop(DEFAULT_COLOR, CENTER | MEDIUM, "%.2f KB/s", speed);
+			updateUI();
+			fclose(ciaFile);
+			ciaFile = NULL;
+			free(tmpbuf);
+			ret = AM_FinishCiaInstall(handle);
+			amExit();
+			if (ret < 0) {
+				EnableSleep();
+				return ret;
+			}
+		}
+		remove(FINAL_CIA_PATH);
+		rename(TOINSTALL_CIA_PATH, FINAL_CIA_PATH);
+	}
+	brewFile = fopen(TOINSTALL_3DSX_PATH, "rb");
+	if (brewFile) {
+		fclose(brewFile);
+		FILE* endBrewFile = fopen_mkdir(FINAL_3DSX_PATH, "w");
+		if (!endBrewFile) {
+			EnableSleep();
+			return 6;
+		}
+		fclose(endBrewFile);
+		remove(FINAL_3DSX_PATH);
+		if (copy_file(TOINSTALL_3DSX_PATH, TEMPORAL_3DSX_PATH)) {
+			EnableSleep();
+			return 7;
+		}
+		rename(TOINSTALL_3DSX_PATH, FINAL_3DSX_PATH);
+	}
+	FILE* file = fopen("/MKW3DS/config/version.bin", "w");
+	fwrite(versionList[lastVerIdx], 1, strlen(versionList[lastVerIdx]), file);
 	fclose(file);
 	progbar->isHidden = true;
 	EnableSleep();

@@ -4,7 +4,7 @@
 #include "clock.h"
 
 static credits_t g_credits = { 0 };
-static u32 g_creditColors[] = { DEFAULT_COLOR, COLOR_BLUE, COLOR_GREEN, COLOR_ORANGE, COLOR_RED, COLOR_YELLOW, COLOR_LIMEGREEN, COLOR_CYAN, COLOR_FUCHSIA, COLOR_SILVER };
+static u32 g_creditColors[] = { 0xFF000000, 0xFFFF0000, 0xFF00A000, 0xFF0058A0, 0xFF0000FF, 0xFF0080A0, 0xFFA08000, 0xFF800070 };
 extern cwav_t* cred_sound;
 extern cwav_t* lag_sound;
 extern cwav_t* sfx_sound;
@@ -15,7 +15,7 @@ extern sprite_t         *topInfoSprite;
 
 char* tryDownloadCredits() {
 	char* ret = NULL;
-	downloadString("https://raw.githubusercontent.com/Midou36O/MKW3DS-updates/master/credits.txt", &ret);
+	downloadString("https://raw.githubusercontent.com/MKW3DS/MKW3DS-updates/master/credits.txt", &ret);
 	return ret;
 }
 
@@ -184,7 +184,7 @@ void creditsLoop() {
 				if (currentry % 2 == 0) shuffle_colors(g_creditColors, sizeof(g_creditColors) / sizeof(u32));
 				drawCreditsText(currentry, totentries >> 1);
 				currentry++;
-				if (currentry >= totpages + 1) currentry = 0;
+				if (currentry >= totpages) currentry = 0;
 			}
 			if (key & KEY_B) {
 				creditsloop = false;

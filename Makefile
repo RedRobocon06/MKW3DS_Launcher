@@ -17,7 +17,7 @@ LAUNCHER_M = 1
 
 ifeq ($(LAUNCHER_M), 1)
 	NAME := MKW3DS
-else
+else 
 	NAME := MKW3DS_Installer
 endif
 
@@ -28,13 +28,13 @@ SOURCE_DIRS := source source/json source/allocator
 
 EXTRA_OUTPUT_FILES :=
 
-LIBRARY_DIRS := $(PORTLIBS) $(CTRULIB)
-LIBRARIES := citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
+LIBRARY_DIRS := $(PORTLIBS) $(CTRULIB) $(DEVKITPRO)/libcwav $(DEVKITPRO)/libncsnd
+LIBRARIES := citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto cwav ncsnd
 
 ifeq ($(LAUNCHER_M), 1)
 	VERSION_MAJOR := 1
 	VERSION_MINOR := 3
-	VERSION_MICRO := 2
+	VERSION_MICRO := 3
 else
 	VERSION_MAJOR := 1
 	VERSION_MINOR := 0
@@ -42,12 +42,13 @@ else
 endif
 
 BUILD_FLAGS := -march=armv6k -mtune=mpcore -mfloat-abi=hard
-BUILD_FLAGS_CC := -g -Wall -Wno-strict-aliasing -O3 -mword-relocations \
+BUILD_FLAGS_CC := -g -Wall -Wno-strict-aliasing -O2 -mword-relocations \
 					-fomit-frame-pointer -ffast-math $(ARCH) $(INCLUDE) -D__3DS__ $(BUILD_FLAGS) \
 					-DAPP_VERSION_MAJOR=${VERSION_MAJOR} \
 					-DAPP_VERSION_MINOR=${VERSION_MINOR} \
 					-DAPP_VERSION_MICRO=${VERSION_MICRO} \
-					-DLAUNCHER_MODE=${LAUNCHER_M}
+					-DLAUNCHER_MODE=${LAUNCHER_M} \
+					-DCWAV_DISABLE_CSND
 
 BUILD_FLAGS_CXX := $(COMMON_FLAGS) -std=gnu++11
 RUN_FLAGS :=
@@ -59,10 +60,10 @@ RUN_FLAGS :=
 # 3DS/Wii U CONFIGURATION #
 
 ifeq ($(TARGET),$(filter $(TARGET),3DS WIIU))
-	TITLE := Mario kart wii 3ds
+	TITLE := Mario Kart Wii 3DS
 	ifeq ($(LAUNCHER_M), 1)
 		DESCRIPTION := Launcher & Updater
-	else
+	else 
 		DESCRIPTION := Installer
 	endif
     AUTHOR := MKW3DS Team
@@ -74,7 +75,7 @@ ifeq ($(TARGET),3DS)
     LIBRARY_DIRS += $(DEVKITPRO)/libctru $(DEVKITPRO)/portlibs/3ds/
     LIBRARIES += citro3d ctru png z m curl mbedtls mbedx509 mbedcrypto
 
-    PRODUCT_CODE := CTR-P-MKWI
+    PRODUCT_CODE := CTR-P-CMKW
     UNIQUE_ID := 0x3085C
 
     CATEGORY := Application
@@ -86,18 +87,18 @@ ifeq ($(TARGET),3DS)
     CPU_SPEED := 268MHz
     ENABLE_L2_CACHE := true
 
-    ICON_FLAGS := --flags visible,recordusage
+    ICON_FLAGS := --flags visible,recordusage,nosavebackups
 
 	ifeq ($(LAUNCHER_M), 1)
 		ROMFS_DIR := romfs
-	else
-		ROMFS_DIR := romfs_installer
+	else 
+		ROMFS_DIR := romfs_inst
 	endif
 
     BANNER_AUDIO := resources/audio.cwav
-
+    
     BANNER_IMAGE := resources/banner.cgfx
-
+    
 	ICON := resources/icon.png
 
 	LOGO := resources/logo.bcma.lz
