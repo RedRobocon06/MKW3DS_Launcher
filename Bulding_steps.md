@@ -31,11 +31,12 @@
     - If you downloaded these files somewhere else then change the path to the folder you downloaded them
  6. Run `sudo dkp-pacman -S 3ds-dev` `sudo dkp-pacman -S 3ds-curl` `sudo dkp-pacman -S 3ds-libpng`
     - If you're on arch remove `dkp-` as devkitpro uses pacman itself to install its packages
- 7. Now run `mkdir MKW3DS_Build` then `git clone https://github.com/Midou36O/MKW3DS_Launcher.git`
- 8. Run `cd MKW3DS_Build` then `cd MKW3DS_Launcher`
- 9. Run make and wait
- 10. If it whines about zip not being found ingore that
+ 7. Get [LibCWAV](https://github.com/PabloMK7/libcwav) And follow the build and install instructions.
+ 8. Now run `mkdir MKW3DS_Build` then `git clone https://github.com/Midou36O/MKW3DS_Launcher.git`
+ 9. Run `cd MKW3DS_Build` then `cd MKW3DS_Launcher`
+ 10. Run make and wait
+ 11. If it whines about zip not being found ingore that
  
      ![image](https://user-images.githubusercontent.com/45198486/125319993-3069a800-e333-11eb-8633-8bacc51ec059.png)
 
- 11. check the ./output/3ds-arm/ and you should get all the build files ready to be installed.
+ 12. check the ./output/3ds-arm/ and you should get all the build files ready to be installed.
