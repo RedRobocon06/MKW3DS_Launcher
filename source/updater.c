@@ -455,7 +455,7 @@ bool downloadChangelog() {
 	int index1 = 0;
 	int index2 = 0;
 
-	int retcode = downloadString("https://raw.githubusercontent.com/MKW3DS/MKW3DS-updates/master/updates/changeloglist", &downstr);
+	int retcode = downloadString("https://raw.githubusercontent.com/RedRobocon06/MKW3DS-updates/master/updates/changeloglist", &downstr);
 	if (retcode || downstr == NULL) {
 		if (downstr) {
 			free(downstr);
@@ -492,7 +492,7 @@ bool downloadChangelog() {
 bool updateAvailable() {
 	if (!isWifiAvailable()) return false;
 	char* downstr = NULL;
-	int retcode = downloadString("https://raw.githubusercontent.com/MKW3DS/MKW3DS-updates/master/updates/latestver", &downstr);;
+	int retcode = downloadString("https://raw.githubusercontent.com/RedRobocon06/MKW3DS-updates/master/updates/latestver", &downstr);;
 	
 	/* Edited by CyberYoshi64 - It's a mess, I'll tell ya that lmao. */
 	
@@ -622,7 +622,7 @@ int performUpdate(progressbar_t* progbar, bool* restartNeeded) {
 		char* downstr = NULL;
 		if (!URL) URL = malloc(200);
 		int filecount = 0;
-		sprintf(URL, "https://github.com/MKW3DS/MKW3DS-updates/releases/download/v%s/filelist.txt", versionList[index]);
+		sprintf(URL, "https://github.com/RedRobocon06/MKW3DS-updates/releases/download/v%s/filelist.txt", versionList[index]);
 		int retcode = downloadString(URL, &downstr);
 
 		if (retcode || downstr == NULL) {
@@ -890,7 +890,7 @@ u64 performInstall(progressbar_t* progbar) {
 	char* downstr = NULL;
 	if (!URL) URL = malloc(200);
 	int filecount = 0;
-	sprintf(URL, "https://raw.githubusercontent.com/MKW3DS/MKW3DS-updates/master/updates/installinfo.txt");
+	sprintf(URL, "https://raw.githubusercontent.com/RedRobocon06/MKW3DS-updates/master/updates/installinfo.txt");
 	int retcode = downloadString(URL, &downstr);
 
 	if (retcode || downstr == NULL) {
