@@ -66,7 +66,7 @@ ifeq ($(TARGET),$(filter $(TARGET),3DS WIIU))
 	else 
 		DESCRIPTION := Installer
 	endif
-    AUTHOR := MKW3DS Team
+    AUTHOR := Nintendo / MKW3DS Team
 endif
 
 # 3DS CONFIGURATION #
